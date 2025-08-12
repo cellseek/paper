@@ -1,0 +1,195 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{parskip}
+
+\title{CellSeek: Fully Automated Cell Tracking via Segment Anything Model and Memory-Augmented Networks}
+\author{}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  We present CellSeek, a novel automated pipeline for cell tracking in microscopy videos that eliminates the need for manual annotation. Our approach integrates a modified Segment Anything Model (SAM) for cellular segmentation with Extended Memory Networks (XMem) for temporal tracking. The system performs initial cell detection and segmentation on the first frame using CellSAM, a specialized adaptation of SAM optimized for cellular structures, then maintains consistent tracking across video sequences using XMem's memory-augmented architecture. CellSeek achieves fully automated cell tracking from raw video input to final tracked trajectories, addressing a critical bottleneck in quantitative cell biology research.
+\end{abstract}
+
+% FIGURE SUGGESTION: Add a workflow diagram here showing the CellSeek pipeline (input video → segmentation → tracking → output).
+
+\section{Introduction}
+
+Cell tracking in microscopy videos represents a fundamental challenge in quantitative cell biology, requiring the accurate detection, segmentation, and temporal association of individual cells across video sequences. Traditional approaches rely heavily on manual annotation or semi-automated methods that require significant user intervention, creating bottlenecks in high-throughput biological studies. The complexity arises from multiple factors including cell deformation, division events, overlapping objects, varying illumination conditions, and background heterogeneity.
+
+Recent advances in deep learning have revolutionized computer vision tasks, with foundation models like the Segment Anything Model demonstrating remarkable generalization capabilities across diverse visual domains. Similarly, memory-augmented networks have shown exceptional performance in video object segmentation by maintaining temporal consistency through learned representations. However, the integration of these powerful paradigms for specialized biological applications remains largely unexplored.
+
+We present CellSeek, a novel computational pipeline that bridges state-of-the-art computer vision techniques with cellular biology requirements. Our approach eliminates the manual annotation bottleneck by automatically detecting cells in the initial frame and maintaining their identities throughout the video sequence. The system leverages the robust feature extraction capabilities of vision transformers while incorporating biological priors through flow field prediction, resulting in accurate and temporally consistent cell tracking. To ensure broad accessibility within the biological research community, CellSeek includes a comprehensive graphical user interface that guides users through the complete analysis workflow while providing sophisticated manual annotation tools for expert refinement.
+
+\section{Methods}
+
+\subsection{System Architecture}
+
+% FIGURE SUGGESTION: Add a schematic of the system architecture, showing the three main modules and data flow.
+
+CellSeek consists of three main components operating in a sequential pipeline: (1) CellSAM for initial cellular segmentation, (2) cell selection and mask preparation, and (3) XMem-based temporal tracking. The system architecture is designed to minimize error propagation between components while maximizing the utilization of each module's specialized capabilities.
+
+The pipeline takes as input a microscopy video $V = \{I_1, I_2, \ldots, I_T\}$ where $I_t \in \mathbb{R}^{H \times W \times 3}$ represents the $t$-th frame, and outputs a sequence of segmentation masks $M = \{M_1, M_2, \ldots, M_T\}$ where $M_t \in \mathbb{Z}^{H \times W}$ contains integer cell identifiers for tracked cells at frame $t$.
+
+The architecture incorporates several key design principles: (1) modular decomposition allowing independent optimization of segmentation and tracking components, (2) robust initialization through sophisticated first-frame analysis, (3) adaptive memory management for handling videos of varying lengths, and (4) error recovery mechanisms to maintain tracking robustness in challenging scenarios.
+
+\subsection{CellSAM: Cellular Segmentation Module}
+
+\subsubsection{Architecture Overview}
+
+CellSAM adapts the Segment Anything Model architecture for cellular segmentation by incorporating flow field prediction inspired by Cellpose methodology. The model consists of three main components:
+
+\begin{enumerate}
+  \item \textbf{Vision Transformer Encoder}: Based on SAM's ViT backbone for feature extraction
+  \item \textbf{Flow Prediction Head}: Predicts 2D flow fields for instance segmentation
+  \item \textbf{Mask Decoder}: Generates final segmentation masks from flow dynamics
+\end{enumerate}
+
+\subsubsection{Flow Field Prediction}
+
+% FIGURE SUGGESTION: Add an example image showing input microscopy frame, predicted flow fields, and resulting segmentation mask.
+
+Given an input image $I \in \mathbb{R}^{H \times W \times 3}$, CellSAM predicts a flow field $F \in \mathbb{R}^{H \times W \times 3}$ where:
+
+\begin{align}
+  F(:,:,0) & = \text{vertical flow component } (dy)   \\
+  F(:,:,1) & = \text{horizontal flow component } (dx) \\
+  F(:,:,2) & = \text{cell probability } (p_{cell})
+\end{align}
+
+\subsubsection{Network Architecture}
+
+The CellSAM network is defined as:
+
+\begin{algorithm}[H]
+  \caption{CellSAM Forward Pass}
+  \begin{algorithmic}[1]
+    \REQUIRE Input image $I \in \mathbb{R}^{H \times W \times 3}$
+    \ENSURE Flow field $F \in \mathbb{R}^{H \times W \times 3}$, style features $S$
+    \STATE $\text{features} \leftarrow \text{ViT\_Encoder}(I)$
+    \STATE $\text{flow\_features} \leftarrow \text{FlowHead}(\text{features})$
+    \STATE $F \leftarrow \text{Conv2D}(\text{flow\_features}, \text{out\_channels}=3)$
+    \STATE $S \leftarrow \text{StyleHead}(\text{features})$
+    \RETURN $F, S$
+  \end{algorithmic}
+\end{algorithm}
+
+\subsection{Temporal Tracking with XMem}
+
+\subsubsection{XMem Architecture}
+
+The temporal tracking component utilizes Extended Memory Networks (XMem) to maintain consistent object identities across frames. XMem represents a sophisticated approach to video object segmentation that addresses the fundamental challenge of maintaining object identities while adapting to appearance changes over time. The architecture consists of four interconnected components:
+
+\begin{enumerate}
+  \item \textbf{Memory Encoder}: Encodes reference frames and masks into memory representations
+  \item \textbf{Memory Reader}: Retrieves relevant information from memory for current frame processing
+  \item \textbf{Memory Manager}: Updates and maintains the memory bank with new observations
+  \item \textbf{Mask Decoder}: Generates segmentation masks for the current frame
+\end{enumerate}
+
+\subsubsection{Memory Representation}
+
+XMem maintains two types of memory banks with distinct characteristics and update policies:
+
+\begin{align}
+  \mathcal{M}_{work} & = \{\mathbf{k}_i^{work}, \mathbf{v}_i^{work}\}_{i=1}^{N_{work}} \\
+  \mathcal{M}_{long} & = \{\mathbf{k}_j^{long}, \mathbf{v}_j^{long}\}_{j=1}^{N_{long}}
+\end{align}
+
+\subsubsection{Tracking Algorithm}
+
+The tracking process operates through a sophisticated multi-stage algorithm:
+
+\begin{algorithm}[H]
+  \caption{XMem Tracking}
+  \begin{algorithmic}[1]
+    \REQUIRE Current frame $I_t$, memory banks $\mathcal{M}_{work}, \mathcal{M}_{long}$
+    \ENSURE Predicted mask $M_t$
+    \STATE $\mathbf{q}_t \leftarrow \text{QueryEncoder}(I_t)$
+    \STATE $\mathbf{r}_t \leftarrow \text{MemoryReader}(\mathbf{q}_t, \mathcal{M}_{work}, \mathcal{M}_{long})$
+    \STATE $M_t \leftarrow \text{MaskDecoder}(\mathbf{q}_t, \mathbf{r}_t)$
+    \STATE $\mathcal{M}_{work}, \mathcal{M}_{long} \leftarrow \text{MemoryUpdate}(I_t, M_t, \mathcal{M}_{work}, \mathcal{M}_{long})$
+    \RETURN $M_t$
+  \end{algorithmic}
+\end{algorithm}
+
+\section{Discussion}
+
+% FIGURE SUGGESTION: Add a table or bar chart comparing CellSeek performance to baseline methods (accuracy, IoU, tracking metrics).
+% FIGURE SUGGESTION: Add visual comparison of tracking results (side-by-side images or overlays for CellSeek vs. baselines).
+
+\subsection{Technical Innovations}
+
+The key technical contributions of CellSeek include:
+
+\begin{enumerate}
+  \item \textbf{SAM Adaptation}: Novel modification of SAM for cellular segmentation using flow field prediction
+  \item \textbf{Seamless Integration}: Automated pipeline connecting segmentation and tracking without manual intervention
+  \item \textbf{Memory-Efficient Processing}: Tiled inference and memory management for processing large microscopy videos
+  \item \textbf{Robust Tracking}: XMem's memory architecture provides resilience to occlusions and appearance changes
+\end{enumerate}
+
+\subsection{Limitations and Future Work}
+
+Current limitations include:
+\begin{itemize}
+  \item Dependency on cell detection quality in the first frame
+  \item Limited handling of cell division events
+  \item Computational requirements for real-time processing
+  \item Need for parameter tuning for different cell types
+\end{itemize}
+
+\section{CellSeek GUI: User-Friendly Interface for Biologists}
+
+% FIGURE SUGGESTION: Add a screenshot of the GUI main window, highlighting workflow tabs and main features.
+
+To make CellSeek accessible to biologists without programming expertise, we developed a comprehensive PyQt6-based GUI that transforms complex computer vision algorithms into an intuitive workflow tool.
+
+\subsection{Design and Architecture}
+
+The interface features a dark-themed design optimized for microscopy data analysis and employs a modular tab system: Frame Management, Segmentation, Tracking, Analysis, and Export. This workflow-oriented organization provides immediate visual feedback while preserving session state for resumable analyses.
+
+\subsection{Frame Management and Data Import}
+
+The Frame Manager supports drag-and-drop import of multiple formats including standard images (PNG, JPEG, TIFF), videos (MP4, AVI, MOV), and specialized microscopy formats (CZI, LSM, ND2). The system automatically sorts frames chronologically and provides efficient thumbnail navigation with progressive loading for large datasets.
+
+\subsection{Segmentation Interface}
+
+The segmentation panel offers both preset configurations and expert-level parameter control with intelligent validation. Key parameters include cell diameter (5-200 pixels), flow threshold (0.1-2.0), cell probability threshold (-6.0 to 6.0), and device selection. Context-sensitive tooltips explain each parameter's biological significance, while real-time progress monitoring provides processing status and intermediate previews.
+
+\subsection{Manual Annotation Tools}
+
+% FIGURE SUGGESTION: Add a panel showing the annotation interface, with overlays for confidence, boundaries, and mask editing.
+
+The annotation system integrates SAM's capabilities with intuitive interaction modes: precision click with hover preview, bounding box selection for complex morphologies, multi-point refinement, and direct mask editing with brush tools. Visual feedback includes confidence overlays, boundary indicators, and real-time annotation statistics.
+
+\subsection{Tracking and Analysis}
+
+The tracking panel abstracts XMem parameters into biologically meaningful controls, including memory bank optimization, update strategies, and quality thresholds. Real-time visualization displays cell trajectories with confidence indicators and processing status.
+
+The analysis panel automatically computes morphological parameters (area, perimeter, circularity), intensity statistics, and temporal dynamics (velocity, displacement). Interactive plotting tools enable data exploration through scatter plots, histograms, and trajectory visualization.
+
+\subsection{Export and Performance}
+
+% FIGURE SUGGESTION: Add a summary table of supported export formats and their use cases.
+
+The export system supports multiple formats: CSV/Excel for quantitative data, PNG/JPEG/TIFF for images, MP4/AVI for videos, and specialized formats for ImageJ/FIJI and CellProfiler integration. Batch processing capabilities include simultaneous multi-format export with progress monitoring.
+
+The GUI implements efficient memory management through lazy loading and intelligent caching, while leveraging multi-threading for background processing and multi-GPU support for optimal performance on large datasets.
+
+\end{document}
