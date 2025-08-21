@@ -51,40 +51,36 @@ The pipeline takes a microscopy video $V = \{I_1, I_2, \ldots, I_T\}$ where $I_t
 
 \subsubsection{Architecture Overview}
 
-Cellpose-SAM adapts the Segment Anything Model architecture for cellular segmentation by incorporating flow field prediction inspired by Cellpose methodology. This implementation builds upon the Cellpose framework, integrating SAM's powerful vision transformer backbone with Cellpose's proven flow-based instance segmentation approach. The model consists of three main components:
+Cellpose-SAM represents a strategic adaptation of the Segment Anything Model (SAM) for biological instance segmentation, fundamentally transforming SAM from a prompt-based interactive tool into an automatic dense segmentation system for cellular imagery. The model leverages SAM's powerful pretrained components while introducing an automatic prompt generation mechanism that eliminates the need for manual annotation.
+
+The architecture consists of four main components:
 
 \begin{enumerate}
-  \item \textbf{Vision Transformer Encoder}: Based on SAM's ViT backbone for feature extraction
-  \item \textbf{Flow Prediction Head}: Predicts 2D flow fields for instance segmentation
-  \item \textbf{Mask Decoder}: Generates final segmentation masks from flow dynamics
+  \item \textbf{Vision Transformer Encoder (ViT-H)}: Utilizes SAM's heavyweight encoder with 632 million parameters, pretrained on the SA-1B dataset, providing robust visual understanding
+  \item \textbf{Automatic Prompt Generator}: A learned module that analyzes image features to generate candidate cell locations as prompt tokens
+  \item \textbf{Prompt Encoder}: Converts automatically generated prompts into decoder-compatible representations
+  \item \textbf{Mask Decoder}: Lightweight transformer that cross-attends to image features and prompt tokens to generate precise segmentation masks
 \end{enumerate}
 
-\subsubsection{Flow Field Prediction}
+\subsubsection{Automatic Prompt Generation Mechanism}
 
-Given an input image $I \in \mathbb{R}^{H \times W \times 3}$, Cellpose-SAM predicts a flow field $F \in \mathbb{R}^{H \times W \times 3}$ where:
-
-\begin{align}
-  F(:,:,0) & = \text{vertical flow component } (dy)   \\
-  F(:,:,1) & = \text{horizontal flow component } (dx) \\
-  F(:,:,2) & = \text{cell probability } (p_{cell})
-\end{align}
-
-\subsubsection{Network Architecture}
-
-The Cellpose-SAM network is defined as:
+The critical innovation in Cellpose-SAM lies in its automatic prompt generation system, which transforms SAM from an interactive image-to-mask model into a fully automatic image-to-masks system:
 
 \begin{algorithm}[H]
-  \caption{Cellpose-SAM Forward Pass}
+  \caption{Automatic Dense Segmentation Pipeline}
   \begin{algorithmic}[1]
-    \REQUIRE Input image $I \in \mathbb{R}^{H \times W \times 3}$
-    \ENSURE Flow field $F \in \mathbb{R}^{H \times W \times 3}$, style features $S$
+    \REQUIRE Input image $I \in \mathbb{R}^{H \times W \times 3}$ (with cytoplasmic signal in blue channel)
+    \ENSURE Dense segmentation masks $\{M_1, M_2, \ldots, M_N\}$
     \STATE $\text{features} \leftarrow \text{ViT\_Encoder}(I)$
-    \STATE $\text{flow\_features} \leftarrow \text{FlowHead}(\text{features})$
-    \STATE $F \leftarrow \text{Conv2D}(\text{flow\_features}, \text{out\_channels}=3)$
-    \STATE $S \leftarrow \text{StyleHead}(\text{features})$
-    \RETURN $F, S$
+    \STATE $\text{candidates} \leftarrow \text{PromptGenerator}(\text{features})$ \COMMENT{Generate cell location candidates}
+    \STATE $\text{prompt\_tokens} \leftarrow \text{PromptEncoder}(\text{candidates})$
+    \STATE $\text{raw\_masks} \leftarrow \text{MaskDecoder}(\text{features}, \text{prompt\_tokens})$
+    \STATE $\text{final\_masks} \leftarrow \text{NMS\_Filter}(\text{raw\_masks})$ \COMMENT{Remove duplicates and low-confidence}
+    \RETURN $\text{final\_masks}$
   \end{algorithmic}
 \end{algorithm}
+
+The model was extensively fine-tuned on aggregated biological datasets including Cellpose, TissueNet, Omnipose, DeepBacs, and MoNuSeg. This specialized training process adapts SAM's general architecture to the specific morphological characteristics of cellular structures while preserving its inherent generalization capabilities across diverse imaging conditions.
 
 \subsection{Temporal Tracking with Cutie}
 
