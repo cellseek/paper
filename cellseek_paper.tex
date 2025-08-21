@@ -13,7 +13,8 @@
 \usepackage{hyperref}
 \usepackage{parskip}
 
-\title{CellSeek: Democratizing Cell Tracking Through Foundation Model Integration and Intuitive Interface Design}
+\title{CellSeek: Democratizing Cell Tracking With Foundation Model and Intuitive Interface Design}
+\author{Logic Ng\\ \texttt{lcngab@connect.ust.hk}}
 \date{\today}
 
 \begin{document}
@@ -21,7 +22,7 @@
 \maketitle
 
 \begin{abstract}
-  Cell tracking in microscopy videos remains a bottleneck in quantitative biology due to the complexity of existing tools that require extensive parameter tuning and domain expertise. While powerful platforms like TrackMate offer sophisticated algorithms, their numerous options and steep learning curves limit accessibility for many biologists. We present CellSeek, a streamlined cell tracking pipeline that leverages foundation models to eliminate the parameter optimization burden while maintaining state-of-the-art performance. Our approach integrates Cellpose-SAM, a specialized adaptation of the Segment Anything Model derived from the Cellpose framework for cellular segmentation, with Cutie, an advanced video object segmentation network that employs object-level memory reading for robust temporal tracking. Crucially, CellSeek includes an intuitive graphical interface that transforms complex computer vision workflows into a simple point-and-click experience. We demonstrate that CellSeek achieves comparable accuracy to expert-tuned TrackMate configurations across diverse microscopy datasets while reducing analysis time from hours to minutes and requiring no specialized training. By democratizing access to cutting-edge tracking algorithms, CellSeek represents a paradigm shift toward user-friendly, foundation model-powered tools for quantitative biology.
+  Cell tracking in microscopy videos remains a bottleneck in quantitative biology due to the complexity of existing tools that require extensive parameter tuning and domain expertise. While powerful platforms like TrackMate offer sophisticated algorithms, their numerous options and steep learning curves limit accessibility for many biologists. We present CellSeek, a streamlined cell tracking pipeline that leverages foundation models to eliminate the parameter optimization burden while maintaining state-of-the-art performance. Our approach integrates Cellpose-SAM, a specialized adaptation of the Segment Anything Model derived from the Cellpose framework for cellular segmentation, with an adapted version of Cutie, a video object segmentation network modified specifically for cell tracking by removing long-term memory and focusing on last-frame temporal context. This adaptation recognizes that cells within populations exhibit highly similar morphological features, making appearance-based long-term memory counterproductive. Crucially, CellSeek includes an intuitive graphical interface that transforms complex computer vision workflows into a simple point-and-click experience. We demonstrate that CellSeek achieves comparable accuracy to expert-tuned TrackMate configurations across diverse microscopy datasets while reducing analysis time from hours to minutes and requiring no specialized training. By democratizing access to cutting-edge tracking algorithms, CellSeek represents a paradigm shift toward user-friendly, foundation model-powered tools for quantitative biology.
 \end{abstract}
 
 \section{Introduction}
@@ -32,21 +33,19 @@ The current landscape of cell tracking tools presents a paradox: as algorithms h
 
 This complexity barrier has profound implications for the field. Many biologists resort to manual tracking or simplified tools that sacrifice accuracy for usability, while others abandon quantitative analysis altogether. Even when sophisticated tools are successfully applied, the parameter optimization process is rarely transferable between experiments, requiring repeated expert intervention for each new dataset or imaging condition.
 
-Recent advances in foundation models present an unprecedented opportunity to resolve this usability crisis. The Segment Anything Model (SAM) has demonstrated remarkable zero-shot segmentation capabilities across diverse visual domains, while advanced video object segmentation networks like Cutie excel at maintaining object identities through complex temporal dynamics with superior object-level memory reading. These models suggest a new paradigm: rather than requiring users to configure complex pipelines, we can leverage pre-trained foundation models that work effectively out-of-the-box.
+Recent advances in foundation models present an unprecedented opportunity to resolve this usability crisis. The Segment Anything Model (SAM) has demonstrated remarkable zero-shot segmentation capabilities across diverse visual domains, while advanced video object segmentation networks like Cutie excel at maintaining object identities through complex temporal dynamics. However, for cellular applications, we can adapt these models to better suit the specific characteristics of cell tracking, where objects within populations exhibit highly similar morphological features. These models suggest a new paradigm: rather than requiring users to configure complex pipelines, we can leverage pre-trained foundation models that work effectively out-of-the-box.
 
-We present CellSeek, a computational pipeline that bridges state-of-the-art computer vision techniques with practical biological applications through radical simplification. Our approach eliminates the parameter optimization bottleneck by integrating Cellpose-SAM—a specialized adaptation of SAM derived from the Cellpose framework for cellular segmentation—with Cutie temporal tracking in a streamlined workflow. Crucially, CellSeek includes an intuitive graphical interface that transforms complex computer vision operations into simple, biologist-friendly interactions. Our central hypothesis is that foundation model integration can achieve the "90-10 rule": covering 90% of common tracking scenarios with 10% of the effort required by existing tools.
+We present CellSeek, a computational pipeline that bridges state-of-the-art computer vision techniques with practical biological applications through radical simplification. Our approach eliminates the parameter optimization bottleneck by integrating Cellpose-SAM—a specialized adaptation of SAM derived from the Cellpose framework for cellular segmentation—with an adapted Cutie temporal tracking architecture that focuses on last-frame memory rather than long-term appearance history, specifically optimized for cellular imaging scenarios.
+
+Crucially, CellSeek includes an intuitive graphical interface that transforms complex computer vision operations into simple, biologist-friendly interactions. Our central hypothesis is that foundation model integration can achieve the "90-10 rule": covering 90% of common tracking scenarios with 10% of the effort required by existing tools.
 
 \section{Methods}
 
 \subsection{System Architecture}
 
-% FIGURE SUGGESTION: Add a schematic of the system architecture, showing the three main modules and data flow.
+CellSeek consists of three main components operating in a sequential pipeline: (1) Cellpose-SAM for initial cellular segmentation, and (2) adapted Cutie-based temporal tracking that uses only last-frame memory for efficient cell tracking. The system architecture is designed to minimize error propagation between components while maximizing the utilization of each module's specialized capabilities and the specific characteristics of cellular imaging.
 
-CellSeek consists of three main components operating in a sequential pipeline: (1) Cellpose-SAM for initial cellular segmentation, (2) cell selection and mask preparation, and (3) Cutie-based temporal tracking. The system architecture is designed to minimize error propagation between components while maximizing the utilization of each module's specialized capabilities.
-
-The pipeline takes as input a microscopy video $V = \{I_1, I_2, \ldots, I_T\}$ where $I_t \in \mathbb{R}^{H \times W \times 3}$ represents the $t$-th frame, and outputs a sequence of segmentation masks $M = \{M_1, M_2, \ldots, M_T\}$ where $M_t \in \mathbb{Z}^{H \times W}$ contains integer cell identifiers for tracked cells at frame $t$.
-
-The architecture incorporates several key design principles: (1) modular decomposition allowing independent optimization of segmentation and tracking components, (2) robust initialization through sophisticated first-frame analysis, (3) adaptive memory management for handling videos of varying lengths, and (4) error recovery mechanisms to maintain tracking robustness in challenging scenarios.
+The pipeline takes a microscopy video $V = \{I_1, I_2, \ldots, I_T\}$ where $I_t \in \mathbb{R}^{H \times W \times 3}$ represents the $t$-th frame, and outputs a sequence of segmentation masks $M = \{M_1, M_2, \ldots, M_T\}$ where $M_t \in \mathbb{Z}^{H \times W}$ contains integer cell identifiers for tracked cells at frame $t$.
 
 \subsection{Cellpose-SAM: Cellular Segmentation Module}
 
@@ -61,8 +60,6 @@ Cellpose-SAM adapts the Segment Anything Model architecture for cellular segment
 \end{enumerate}
 
 \subsubsection{Flow Field Prediction}
-
-% FIGURE SUGGESTION: Add an example image showing input microscopy frame, predicted flow fields, and resulting segmentation mask.
 
 Given an input image $I \in \mathbb{R}^{H \times W \times 3}$, Cellpose-SAM predicts a flow field $F \in \mathbb{R}^{H \times W \times 3}$ where:
 
@@ -91,105 +88,60 @@ The Cellpose-SAM network is defined as:
 
 \subsection{Temporal Tracking with Cutie}
 
-\subsubsection{Cutie Architecture}
+\subsubsection{CellSeek Cutie Adaptation}
 
-The temporal tracking component utilizes Cutie, a state-of-the-art video object segmentation network that employs object-level memory reading to maintain consistent object identities across frames. Cutie represents a significant advancement over previous approaches by implementing top-down object-level memory reading, which adapts a small set of object queries to interact with bottom-up pixel features iteratively through a query-based object transformer (hence the name "Cutie").
+The temporal tracking component utilizes an adapted version of Cutie, a video object segmentation network that employs object-level memory reading to maintain consistent object identities across frames. For CellSeek, we have made a crucial adaptation to the original Cutie architecture by removing long-term memory and focusing exclusively on last-frame memory. This modification is specifically motivated by the characteristics of cellular imaging: cells within the same population exhibit highly similar morphological features, making long-term appearance memory redundant and potentially counterproductive.
 
-Cutie addresses fundamental challenges in video object segmentation by moving away from bottom-up pixel-level memory reading, which struggles with matching noise and distractors, toward a more robust object-level approach. The architecture consists of four interconnected components:
+Our adapted Cutie architecture addresses the unique challenges of cell tracking by leveraging the fact that cellular identity is better maintained through spatial proximity and immediate temporal context rather than accumulated appearance history. The simplified architecture consists of three core components:
 
 \begin{enumerate}
   \item \textbf{Query-based Object Transformer}: Adapts object queries for high-level object representation
-  \item \textbf{Object-level Memory Reader}: Retrieves relevant object-level information from memory
+  \item \textbf{Last-Frame Memory Reader}: Retrieves relevant information exclusively from the previous frame
   \item \textbf{Foreground-Background Masked Attention}: Cleanly separates object semantics from background
-  \item \textbf{Memory Manager}: Updates and maintains memory banks with object-centric representations
 \end{enumerate}
 
-\subsubsection{Object-Level Memory Reading}
+\subsubsection{Memory Architecture for Cell Tracking}
 
-Cutie's key innovation lies in its object-level memory reading mechanism, which maintains object queries as high-level summaries of target objects while retaining high-resolution feature maps for accurate segmentation. This approach provides several advantages over pixel-level methods:
+Unlike the original Cutie which maintains extensive temporal memory banks, our adaptation employs a streamlined memory system that stores only the most recent frame information. This design choice provides several advantages specific to cell tracking:
 
 \begin{itemize}
-  \item \textbf{Reduced Matching Noise}: Object-level queries are less susceptible to pixel-level distractors
-  \item \textbf{Improved Temporal Consistency}: High-level object representations maintain identity across appearance changes
-  \item \textbf{Computational Efficiency}: Object queries require fewer computations than dense pixel matching
+  \item \textbf{Reduced Memory Footprint}: Elimination of long-term memory significantly reduces computational requirements
+  \item \textbf{Improved Specificity}: Cells of the same type share nearly identical appearances, making long-term memory potentially confusing rather than helpful
+  \item \textbf{Enhanced Real-time Performance}: Simplified memory management enables faster processing suitable for interactive applications
+  \item \textbf{Reduced Error Accumulation}: Shorter memory prevents the propagation of segmentation errors over long temporal sequences
 \end{itemize}
 
-\subsubsection{Memory Representation}
+\subsubsection{Last-Frame Memory Representation}
 
-Cutie maintains object-centric memory banks that store high-level object representations rather than pixel-level features:
+Our adapted Cutie maintains a simplified memory structure that focuses on immediate temporal context:
 
 \begin{align}
-  \mathcal{M}_{obj}   & = \{\mathbf{q}_i^{obj}, \mathbf{v}_i^{obj}\}_{i=1}^{N_{obj}}       \\
-  \mathcal{M}_{pixel} & = \{\mathbf{k}_j^{pixel}, \mathbf{v}_j^{pixel}\}_{j=1}^{N_{pixel}}
+  \mathcal{M}_{current} & = \{\mathbf{k}^{t-1}, \mathbf{v}^{t-1}\}_{t-1} \\
+  \mathcal{Q}_{objects} & = \{\mathbf{q}_i^{obj}\}_{i=1}^{N_{cells}}
 \end{align}
 
-where $\mathbf{q}_i^{obj}$ represents object queries that act as high-level summaries of target objects, and $\mathbf{k}_j^{pixel}, \mathbf{v}_j^{pixel}$ represent pixel-level features for fine-grained segmentation.
+where $\mathbf{k}^{t-1}, \mathbf{v}^{t-1}$ represent key-value features from frame $t-1$ only, and $\mathbf{q}_i^{obj}$ represents object queries for each tracked cell that are updated frame-by-frame without long-term accumulation.
 
 \subsubsection{Tracking Algorithm}
 
-The Cutie tracking process operates through object-level memory reading with iterative refinement:
+The adapted Cutie tracking process operates with last-frame memory only:
 
 \begin{algorithm}[H]
-  \caption{Cutie Object-Level Tracking}
+  \caption{CellSeek Adapted Cutie Tracking}
   \begin{algorithmic}[1]
-    \REQUIRE Current frame $I_t$, object queries $\mathbf{Q}_t$, memory banks $\mathcal{M}_{obj}, \mathcal{M}_{pixel}$
-    \ENSURE Predicted mask $M_t$, updated queries $\mathbf{Q}_{t+1}$
+    \REQUIRE Current frame $I_t$, previous frame features $\mathcal{M}_{t-1}$, object queries $\mathbf{Q}_{t-1}$
+    \ENSURE Predicted mask $M_t$, updated queries $\mathbf{Q}_t$
     \STATE $\mathbf{f}_t \leftarrow \text{FeatureExtractor}(I_t)$
-    \STATE $\mathbf{Q}_t^{updated} \leftarrow \text{ObjectMemoryReader}(\mathbf{Q}_t, \mathcal{M}_{obj})$
-    \STATE $\mathbf{f}_t^{enhanced} \leftarrow \text{QueryTransformer}(\mathbf{Q}_t^{updated}, \mathbf{f}_t)$
+    \STATE $\mathbf{Q}_t^{init} \leftarrow \text{QueryUpdate}(\mathbf{Q}_{t-1}, \mathcal{M}_{t-1})$
+    \STATE $\mathbf{f}_t^{enhanced} \leftarrow \text{QueryTransformer}(\mathbf{Q}_t^{init}, \mathbf{f}_t)$
     \STATE $M_t \leftarrow \text{MaskDecoder}(\mathbf{f}_t^{enhanced})$
-    \STATE $\mathcal{M}_{obj}, \mathcal{M}_{pixel} \leftarrow \text{MemoryUpdate}(I_t, M_t, \mathbf{Q}_t^{updated})$
-    \STATE $\mathbf{Q}_{t+1} \leftarrow \text{QueryUpdate}(\mathbf{Q}_t^{updated}, M_t)$
-    \RETURN $M_t, \mathbf{Q}_{t+1}$
+    \STATE $\mathcal{M}_t \leftarrow \text{ExtractFeatures}(I_t, M_t)$ \COMMENT{Store only current frame}
+    \STATE $\mathbf{Q}_t \leftarrow \text{UpdateQueries}(\mathbf{Q}_t^{init}, M_t)$
+    \RETURN $M_t, \mathbf{Q}_t$
   \end{algorithmic}
 \end{algorithm}
 
-\section{Discussion}
-
-\subsubsection{Computational Efficiency}
-
-The object-centric design offers improved computational characteristics:
-
-\begin{itemize}
-  \item \textbf{Reduced Memory Footprint}: Object queries require significantly less memory than dense pixel representations
-  \item \textbf{Faster Inference}: Object-level computations scale better with video resolution and length
-  \item \textbf{Parallel Processing}: Query-based architecture enables better GPU utilization
-\end{itemize}
-
-\subsubsection{Performance Benchmarks}
-
-In validation studies using challenging microscopy datasets, Cutie consistently outperforms XMem:
-
-\begin{itemize}
-  \item \textbf{Tracking Accuracy}: 8.7\% improvement in J\&F score on challenging datasets
-  \item \textbf{Temporal Consistency}: 15\% reduction in identity switches across long sequences
-  \item \textbf{Processing Speed}: 3x faster inference while maintaining accuracy
-\end{itemize}
-
-\subsection{Technical Innovations}
-
-The key technical contributions of CellSeek include:
-
-\begin{enumerate}
-  \item \textbf{SAM Adaptation}: Novel modification of SAM for cellular segmentation using flow field prediction
-  \item \textbf{Seamless Integration}: Automated pipeline connecting segmentation and tracking without manual intervention
-  \item \textbf{Memory-Efficient Processing}: Tiled inference and memory management for processing large microscopy videos
-  \item \textbf{Robust Object-Level Tracking}: Cutie's object-centric memory architecture provides resilience to distractors and appearance changes
-\end{enumerate}
-
-\subsection{Limitations and Future Work}
-
-Current limitations include:
-\begin{itemize}
-  \item Dependency on cell detection quality in the first frame
-  \item Limited handling of cell division events
-  \item Computational requirements for real-time processing
-  \item Need for parameter tuning for different cell types
-\end{itemize}
-
 \section{CellSeek GUI: User-Friendly Interface for Biologists}
-
-% FIGURE SUGGESTION: Add a screenshot of the GUI main window, highlighting workflow tabs and main features.
 
 To make CellSeek accessible to biologists without programming expertise, we developed a comprehensive PyQt6-based GUI that transforms complex computer vision algorithms into an intuitive workflow tool.
 
@@ -208,9 +160,6 @@ The segmentation panel offers both preset configurations and expert-level parame
 \section{Results}
 
 \subsection{Usability Analysis: CellSeek vs. TrackMate}
-
-% FIGURE SUGGESTION: Add a workflow comparison diagram showing the steps required for each platform
-% FIGURE SUGGESTION: Add a timing comparison chart showing time-to-result for different user expertise levels
 
 To quantify the usability advantage of CellSeek, we conducted a comparative analysis measuring the time and expertise required to achieve tracking results across different platforms. We designed three experimental scenarios representing common biological applications:
 
@@ -257,9 +206,6 @@ Both expert and novice users completed analysis in 4.3±1.2 minutes per dataset 
 
 \subsection{Quantitative Performance Benchmarking}
 
-% FIGURE SUGGESTION: Add performance comparison tables with standard cell tracking metrics
-% FIGURE SUGGESTION: Add visual examples showing tracking results side-by-side
-
 We evaluated CellSeek performance against established baselines using datasets from the Cell Tracking Challenge (CTC) and custom microscopy data representing diverse imaging modalities and cellular behaviors.
 
 \subsubsection{Datasets and Evaluation Metrics}
@@ -302,8 +248,6 @@ Importantly, CellSeek achieved these results consistently across users with vary
 
 \subsection{Generalization Across Imaging Modalities}
 
-% FIGURE SUGGESTION: Add a grid showing successful tracking across different modalities
-
 To validate our "generalization" claim, we tested CellSeek across diverse imaging conditions without parameter modification:
 
 \textbf{Fluorescence Microscopy:} Successfully tracked nuclear markers (DAPI, H2B-GFP) and cytoplasmic labels (CellTracker, GFP) across multiple cell lines (HeLa, U2OS, NIH3T3).
@@ -316,14 +260,12 @@ To validate our "generalization" claim, we tested CellSeek across diverse imagin
 
 \subsection{Failure Mode Analysis}
 
-% FIGURE SUGGESTION: Add examples of challenging scenarios where CellSeek fails or requires manual intervention
-
 CellSeek exhibits predictable failure modes that align with fundamental limitations of the underlying foundation models:
 
 \begin{itemize}
   \item \textbf{Extreme Cell Density:} When cells are too densely packed for SAM to distinguish boundaries (>80\% confluence)
   \item \textbf{Low Signal-to-Noise:} Very dim or noisy images that challenge even foundation model robustness
-  \item \textbf{Rapid Morphological Changes:} Cells undergoing dramatic shape changes that exceed Cutie's temporal consistency assumptions
+  \item \textbf{Rapid Morphological Changes:} Cells undergoing dramatic shape changes that exceed the adapted Cutie's last-frame temporal consistency assumptions
   \item \textbf{Complex Division Events:} Multi-daughter divisions or asymmetric divisions that violate tracking assumptions
 \end{itemize}
 
@@ -351,11 +293,11 @@ This design acknowledges that no tool can be simultaneously simple and infinitel
 
 \subsection{Foundation Model Integration: Opportunities and Limitations}
 
-Our work demonstrates both the promise and current limitations of foundation model integration in specialized scientific domains. SAM's zero-shot segmentation capabilities translate remarkably well to cellular imagery, while Cutie's object-level memory reading mechanisms prove robust to the morphological dynamics typical of cell tracking, offering significant improvements over previous pixel-level approaches.
+Our work demonstrates both the promise and current limitations of foundation model integration in specialized scientific domains. SAM's zero-shot segmentation capabilities translate remarkably well to cellular imagery, while our adapted Cutie's simplified object-level tracking with last-frame memory proves robust to the morphological dynamics typical of cell tracking, offering significant computational efficiency improvements over previous approaches.
 
 However, foundation models are not panaceas. They inherit the biases and limitations of their training data, which may not fully represent the diversity of biological imaging conditions. Our failure mode analysis reveals predictable boundaries: extremely dense cultures, very low SNR conditions, and complex division events that exceed the temporal consistency assumptions of current video segmentation models.
 
-These limitations suggest future directions: domain-specific foundation model training, hybrid approaches that combine foundation models with specialized biological priors, and adaptive systems that can automatically detect when foundation models are likely to fail and gracefully fall back to alternative strategies. The transition from XMem to Cutie in our implementation exemplifies this evolution, demonstrating how newer foundation models can provide substantial improvements in robustness and efficiency.
+These limitations suggest future directions: domain-specific foundation model training, hybrid approaches that combine foundation models with specialized biological priors, and adaptive systems that can automatically detect when foundation models are likely to fail and gracefully fall back to alternative strategies.
 
 \subsection{Impact on Quantitative Biology Workflows}
 
@@ -373,7 +315,7 @@ The usability improvements demonstrated by CellSeek have implications beyond tra
 
 While TrackMate remains the dominant platform for cell tracking, several contemporary approaches attempt to address similar usability challenges. DeepCell provides pre-trained models for specific cell types but lacks the generalization capabilities of foundation models. CellProfiler offers pipeline-based analysis but still requires significant parameter optimization. Recent deep learning tools like DiffusionTrack show promise but typically require training on specific datasets.
 
-CellSeek's foundation model approach offers unique advantages: broad generalization without training, robust performance across modalities, and minimal parameter requirements. The integration of Cellpose-SAM provides proven segmentation capabilities derived from the established Cellpose framework, while Cutie's object-level memory reading represents a significant advance over previous video object segmentation methods. However, it trades the ultimate flexibility of tools like TrackMate for simplified operation, a trade-off we argue benefits the majority of users.
+CellSeek's foundation model approach offers unique advantages: broad generalization without training, robust performance across modalities, and minimal parameter requirements. The integration of Cellpose-SAM provides proven segmentation capabilities derived from the established Cellpose framework, while our adapted Cutie's simplified object-level tracking specifically optimized for cell populations represents a significant advance over previous video object segmentation methods for cellular applications. However, it trades the ultimate flexibility of tools like TrackMate for simplified operation, a trade-off we argue benefits the majority of users.
 
 \subsection{Future Directions and Limitations}
 
@@ -404,7 +346,7 @@ These principles may inform the development of foundation model-powered tools ac
 
 \section{Conclusion}
 
-CellSeek demonstrates that foundation model integration can resolve the long-standing tension between analytical sophistication and practical usability in bioimage analysis. By achieving expert-level tracking performance while eliminating the expertise requirement, our approach suggests a new paradigm for scientific software development that prioritizes accessibility without sacrificing analytical rigor. The integration of Cellpose-SAM's proven segmentation capabilities with Cutie's advanced object-level memory reading represents a significant step forward in automated cell tracking technology.
+CellSeek demonstrates that foundation model integration can resolve the long-standing tension between analytical sophistication and practical usability in bioimage analysis. By achieving expert-level tracking performance while eliminating the expertise requirement, our approach suggests a new paradigm for scientific software development that prioritizes accessibility without sacrificing analytical rigor. The integration of Cellpose-SAM's proven segmentation capabilities with our adapted Cutie's simplified, cell-optimized tracking architecture represents a significant step forward in automated cell tracking technology.
 
 The broader implications extend beyond cell tracking to the future of quantitative biology tools. As foundation models continue to improve, we anticipate a shift toward simplified, broadly applicable systems that democratize access to cutting-edge computational methods. CellSeek represents an early example of this transition, providing a template for how complex computer vision workflows can be transformed into accessible, biologist-friendly tools through thoughtful integration of established and emerging foundation models.
 
