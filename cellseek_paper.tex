@@ -128,6 +128,44 @@ The critical innovation in Cellpose-SAM lies in its automatic prompt generation 
 
 The model was extensively fine-tuned on aggregated biological datasets including Cellpose, TissueNet, Omnipose, DeepBacs, and MoNuSeg. This specialized training process adapts SAM's general architecture to the specific morphological characteristics of cellular structures while preserving its inherent generalization capabilities across diverse imaging conditions.
 
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[
+      % Define compact styles
+      block/.style={rectangle, draw, thick, fill=blue!10, minimum width=2.2cm, minimum height=0.8cm, align=center, font=\footnotesize},
+      encoder/.style={rectangle, draw, thick, fill=green!15, minimum width=2.2cm, minimum height=0.8cm, align=center, font=\footnotesize},
+      decoder/.style={rectangle, draw, thick, fill=orange!15, minimum width=2.2cm, minimum height=0.8cm, align=center, font=\footnotesize},
+      data/.style={ellipse, draw, thick, fill=gray!10, minimum width=1.8cm, minimum height=0.6cm, align=center, font=\tiny},
+      arrow/.style={->, >=stealth, thick}
+    ]
+
+    % Top row - main pipeline
+    \node[data] (input) at (0,0) {Input Image\\$I$};
+    \node[encoder, right=1.8cm of input] (vit) {ViT-H\\Encoder};
+    \node[data, right=1.8cm of vit] (features) {Image\\Features};
+    \node[decoder, right=1.8cm of features] (decoder) {Mask\\Decoder};
+    \node[data, right=1.8cm of decoder] (output) {Final\\Masks};
+
+    % Bottom row - prompt generation
+    \node[block, below=1.2cm of vit] (promptgen) {Prompt\\Generator};
+    \node[data, right=1.8cm of promptgen] (prompts) {Auto\\Prompts};
+
+    % Arrows
+    \draw[arrow] (input) -- (vit);
+    \draw[arrow] (vit) -- (features);
+    \draw[arrow] (features) -- (decoder);
+    \draw[arrow] (decoder) -- (output);
+
+    % Prompt flow
+    \draw[arrow] (features.south) -- ++(0,-0.3) -| (promptgen.north);
+    \draw[arrow] (promptgen) -- (prompts);
+    \draw[arrow] (prompts.north) -- ++(0,0.3) -| (decoder.south);
+
+  \end{tikzpicture}
+  \caption{Cellpose-SAM Architecture. The system automatically generates prompts from ViT features to enable dense cellular segmentation without manual annotation.}
+  \label{fig:cellpose-sam}
+\end{figure}
+
 \subsection{Temporal Tracking with Cutie}
 
 \subsubsection{CellSeek Cutie Adaptation}
