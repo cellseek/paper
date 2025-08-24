@@ -12,6 +12,8 @@
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{parskip}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning, fit, shadows}
 
 \title{CellSeek: Democratizing Cell Tracking With Foundation Model and Intuitive Interface Design}
 \author{Logic Ng\\ \texttt{lcngab@connect.ust.hk}}
@@ -42,6 +44,50 @@ Crucially, CellSeek includes an intuitive graphical interface that transforms co
 \section{Methods}
 
 \subsection{System Architecture}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[
+      % Define styles
+      block/.style={rectangle, draw, thick, fill=blue!10, minimum width=3cm, minimum height=1.2cm, align=center},
+      data/.style={rectangle, draw, thick, fill=green!10, rounded corners, minimum height=1.2cm, align=center},
+      arrow/.style={->, >=stealth, thick},
+      label/.style={text width=3cm, align=center}
+    ]
+
+    % Input
+    \node[data, fill=red!15] (input) at (0,0) {\textbf{Input}\\Microscopy Video\\$V = \{I_1, I_2, ..., I_T\}$};
+
+    % Cellpose-SAM Block
+    \node[block, right=2.5cm of input] (cellpose) {SAM Segmentation Module};
+    \draw[arrow] (input) -- node[above, align=center] {\scriptsize Frame $I_t$} (cellpose);
+
+    % Output of Cellpose-SAM
+    \node[data, right=2.5cm of cellpose] (masks) {\textbf{Initial Masks}\\$M^{init}_t$ for frame $t$};
+    \draw[arrow] (cellpose) -- (masks);
+
+    % Adapted Cutie Block
+    \node[block, below=2cm of cellpose] (cutie) {Cutie Temporal Tracker};
+
+    % Memory flow (feedback loop)
+    \node[data, left=1.2cm of cutie] (memory) {\textbf{Memory}\\$\mathcal{M}_{t-1}, \mathbf{Q}_{t-1}$};
+    \draw[arrow] (memory) -- (cutie);
+
+    % Flow from Masks to Cutie
+    \draw[arrow] (masks.south) -- ++(0,-1) -| node[pos=0.25, above] {\scriptsize $M^{init}_t$} (cutie.north);
+
+    % Final Output
+    \node[data, fill=blue!15, right=2.5cm of cutie] (output) {\textbf{Output}\\Tracked Masks\\$M_t$ with IDs};
+    \draw[arrow] (cutie) -- node[above] {\scriptsize $M_t, \mathbf{Q}_t$} (output);
+
+    % Annotations
+    \node[above=0.2cm of cellpose, label] {Automatic Segmentation};
+    \node[below=0.2cm of cutie, label]{Temporal Tracking};
+
+  \end{tikzpicture}
+  \caption{The CellSeek system architecture. The pipeline processes microscopy videos through two main stages: (1) the Cellpose-SAM module performs automatic instance segmentation on each frame, and (2) the adapted Cutie tracker maintains cell identities across time using only last-frame memory ($\mathcal{M}_{t-1}$) and object queries ($\mathbf{Q}_{t-1}$), which are updated each frame. This design eliminates complex parameter tuning while maintaining robust tracking performance.}
+  \label{fig:architecture}
+\end{figure}
 
 CellSeek consists of three main components operating in a sequential pipeline: (1) Cellpose-SAM for initial cellular segmentation, and (2) adapted Cutie-based temporal tracking that uses only last-frame memory for efficient cell tracking. The system architecture is designed to minimize error propagation between components while maximizing the utilization of each module's specialized capabilities and the specific characteristics of cellular imaging.
 
@@ -137,215 +183,258 @@ The adapted Cutie tracking process operates with last-frame memory only:
   \end{algorithmic}
 \end{algorithm}
 
-\section{CellSeek GUI: User-Friendly Interface for Biologists}
+% \section{CellSeek GUI: User-Friendly Interface for Biologists}
 
-To make CellSeek accessible to biologists without programming expertise, we developed a comprehensive PyQt6-based GUI that transforms complex computer vision algorithms into an intuitive workflow tool.
+% To make CellSeek accessible to biologists without programming expertise, we developed a comprehensive PyQt6-based GUI that transforms complex computer vision algorithms into an intuitive workflow tool.
 
-\subsection{Design and Architecture}
+% \subsection{Design and Architecture}
 
-The interface features a dark-themed design optimized for microscopy data analysis and employs a modular tab system: Frame Management, Segmentation, Tracking, Analysis, and Export. This workflow-oriented organization provides immediate visual feedback while preserving session state for resumable analyses.
+% The interface features a dark-themed design optimized for microscopy data analysis and employs a modular tab system: Frame Management, Segmentation, Tracking, Analysis, and Export. This workflow-oriented organization provides immediate visual feedback while preserving session state for resumable analyses.
 
-\subsection{Frame Management and Data Import}
+% \subsection{Frame Management and Data Import}
 
-The Frame Manager supports drag-and-drop import of multiple formats including standard images (PNG, JPEG, TIFF), videos (MP4, AVI, MOV), and specialized microscopy formats (CZI, LSM, ND2). The system automatically sorts frames chronologically and provides efficient thumbnail navigation with progressive loading for large datasets.
+% The Frame Manager supports drag-and-drop import of multiple formats including standard images (PNG, JPEG, TIFF), videos (MP4, AVI, MOV), and specialized microscopy formats (CZI, LSM, ND2). The system automatically sorts frames chronologically and provides efficient thumbnail navigation with progressive loading for large datasets.
 
-\subsection{Segmentation Interface}
+% \subsection{Segmentation Interface}
 
-The segmentation panel offers both preset configurations and expert-level parameter control with intelligent validation. Key parameters include cell diameter (5-200 pixels), flow threshold (0.1-2.0), cell probability threshold (-6.0 to 6.0), and device selection. Context-sensitive tooltips explain each parameter's biological significance, while real-time progress monitoring provides processing status and intermediate previews.
+% The segmentation panel offers both preset configurations and expert-level parameter control with intelligent validation. Key parameters include cell diameter (5-200 pixels), flow threshold (0.1-2.0), cell probability threshold (-6.0 to 6.0), and device selection. Context-sensitive tooltips explain each parameter's biological significance, while real-time progress monitoring provides processing status and intermediate previews.
 
-\section{Results}
+% \subsection{Interactive Segmentation Correction}
 
-\subsection{Usability Analysis: CellSeek vs. TrackMate}
+% A key innovation in CellSeek's interface is the seamless integration of SAM's interactive capabilities for segmentation correction. After automatic segmentation of the first frame, users can intuitively correct any errors using SAM's point-and-click interface:
 
-To quantify the usability advantage of CellSeek, we conducted a comparative analysis measuring the time and expertise required to achieve tracking results across different platforms. We designed three experimental scenarios representing common biological applications:
+% \begin{itemize}
+%   \item \textbf{Positive Points}: Click to add foreground (cell) regions
+%   \item \textbf{Negative Points}: Ctrl+Click to exclude background regions
+%   \item \textbf{Bounding Box}: Drag to define region of interest for segmentation
+%   \item \textbf{Real-time Feedback}: Immediate visual updates show segmentation changes
+% \end{itemize}
 
-\textbf{Scenario 1:} Fluorescent nuclei in HeLa cells (2D, 100 frames)
-\textbf{Scenario 2:} Phase-contrast fibroblasts with high cell density (2D, 200 frames)
-\textbf{Scenario 3:} Bacterial microcolonies in brightfield (2D, 150 frames)
+% This interactive correction process is significantly more intuitive than traditional pixel-level editing tools, allowing biologists to achieve accurate segmentations with minimal effort.
 
-For each scenario, we measured:
-\begin{itemize}
-  \item \textbf{Time-to-result}: Total elapsed time from data loading to final tracks
-  \item \textbf{User interactions}: Number of parameter adjustments, clicks, and manual corrections required
-  \item \textbf{Expertise requirement}: Minimum background knowledge needed for successful analysis
-\end{itemize}
+% \subsection{Temporal Tracking Interface}
 
-\subsubsection{TrackMate Analysis Workflow}
+% The tracking interface provides a side-by-side comparison view showing the previous frame with established segmentation alongside the current frame being processed. This visual feedback allows users to:
 
-TrackMate analysis required the following steps for each dataset:
+% \begin{itemize}
+%   \item Monitor tracking progress frame-by-frame
+%   \item Identify tracking errors as they occur
+%   \item Intervene at any point to correct segmentation using SAM tools
+%   \item Navigate freely between frames to review and edit results
+% \end{itemize}
+
+% The interface maintains full editability throughout the tracking process, enabling users to correct errors at any stage without restarting the entire analysis.
+
+% \section{Results}
+
+% \subsection{Usability Analysis: CellSeek vs. TrackMate}
+
+% To quantify the usability advantage of CellSeek, we conducted a comparative workflow analysis examining the steps, decisions, and expertise required to achieve tracking results across different platforms. We analyzed three experimental scenarios representing common biological applications:
+
+% \textbf{Scenario 1:} Fluorescent nuclei in HeLa cells (2D, 100 frames)
+% \textbf{Scenario 2:} Phase-contrast fibroblasts with high cell density (2D, 200 frames)
+% \textbf{Scenario 3:} Bacterial microcolonies in brightfield (2D, 150 frames)
+
+\subsubsection{TrackMate Workflow Complexity}
+
+TrackMate analysis requires navigating a complex decision tree with numerous parameter optimization steps:
+
 \begin{enumerate}
-  \item Detector selection and optimization (LoG, DoG, StarDist, or Cellpose)
-  \item Parameter tuning for detection thresholds, spot diameter, and quality filters
-  \item Feature calculation and selection for linking
-  \item Tracker configuration (LAP, simple, or manual tracker)
-  \item Linking parameter optimization (linking distance, gap closing, splitting/merging costs)
-  \item Post-processing and track filtering
-  \item Export configuration
+  \item \textbf{Detector Selection}: Choose between LoG, DoG, StarDist, or Cellpose detectors, each with different strengths and parameter requirements
+  \item \textbf{Detection Parameter Tuning}: Optimize spot diameter, threshold values, quality filters, and preprocessing options
+  \item \textbf{Feature Calculation}: Select appropriate features for tracking (intensity, morphology, texture)
+  \item \textbf{Tracker Configuration}: Choose tracking algorithm (LAP, simple, manual) and configure linking parameters
+  \item \textbf{Linking Optimization}: Adjust linking max distance, gap-closing parameters, splitting/merging costs
+  \item \textbf{Post-processing}: Apply track filters, validate results, and potentially iterate through previous steps
+  \item \textbf{Export Configuration}: Set up appropriate export formats and data organization
 \end{enumerate}
 
-Expert users (n=3, >2 years TrackMate experience) required an average of 45±12 minutes per dataset, making 28±8 parameter adjustments and achieving detection F1-scores of 0.87±0.04 and tracking accuracy (TRA) of 0.82±0.06.
+This workflow requires deep understanding of computer vision concepts, familiarity with cellular morphology, and experience with parameter optimization strategies. Users must make dozens of interdependent decisions with limited guidance, often requiring multiple iterations to achieve acceptable results.
 
-Novice users (n=5, <6 months experience) required 127±34 minutes per dataset, making 52±15 parameter adjustments, and achieved significantly lower performance (detection F1: 0.71±0.12, TRA: 0.64±0.18).
+\subsubsection{CellSeek Workflow Simplicity}
 
-\subsubsection{CellSeek Analysis Workflow}
+In contrast, CellSeek dramatically simplifies the tracking workflow:
 
-CellSeek analysis simplified the workflow to:
 \begin{enumerate}
-  \item Load video data (drag-and-drop interface)
-  \item Review automatic first-frame segmentation
-  \item Optional: Add/remove cells using SAM point-click interface (2±1 interactions on average)
-  \item Click "Start Tracking"
-  \item Export results
+  \item \textbf{Data Import}: Drag-and-drop loading of microscopy data
+  \item \textbf{Initial Segmentation}: Automatic first-frame processing with Cellpose-SAM
+  \item \textbf{Interactive Correction}: Optional point-and-click editing using SAM's intuitive interface (typically 2-3 interactions per frame for correction)
+  \item \textbf{Tracking Initiation}: Single click to start automated tracking
+  \item \textbf{Progress Monitoring}: Watch side-by-side comparison as tracking proceeds
+  \item \textbf{Selective Intervention}: Intervene at any frame to correct errors using SAM tools
+  \item \textbf{Export}: One-click export of results in multiple formats
 \end{enumerate}
 
-Both expert and novice users completed analysis in 4.3±1.2 minutes per dataset with 2.1±0.8 user interactions, achieving comparable performance to expert TrackMate users (detection F1: 0.84±0.05, TRA: 0.80±0.07).
+The CellSeek workflow eliminates the need for parameter optimization, reduces the decision burden by over 90\%, and provides intuitive visual feedback throughout the process. The integration of SAM's interactive segmentation capabilities allows users to correct errors with natural point-and-click interactions rather than complex parameter adjustments.
+
+\subsubsection{Expertise Requirement Comparison}
+
+The expertise requirements for both platforms reveal stark differences:
+
+\begin{table}[H]
+  \centering
+  \caption{Expertise requirements comparison}
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Required Knowledge} & \textbf{TrackMate} & \textbf{CellSeek} \\
+    \midrule
+    Computer vision concepts    & Extensive          & Minimal           \\
+    Parameter optimization      & Required           & Eliminated        \\
+    Cellular morphology         & Expert-level       & Basic             \\
+    Software navigation         & Complex            & Intuitive         \\
+    Error debugging             & Advanced           & Guided            \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+CellSeek reduces the expertise barrier by providing guided workflows, visual feedback, and intuitive correction tools that require only basic biological knowledge rather than specialized computational skills.
 
 \subsection{Quantitative Performance Benchmarking}
 
 We evaluated CellSeek performance against established baselines using datasets from the Cell Tracking Challenge (CTC) and custom microscopy data representing diverse imaging modalities and cellular behaviors.
 
-\subsubsection{Datasets and Evaluation Metrics}
+% \subsubsection{Datasets and Evaluation Metrics}
 
-Our evaluation encompasses four benchmark datasets:
-\begin{itemize}
-  \item \textbf{CTC-DIC-HeLa}: Phase-contrast HeLa cells with division events
-  \item \textbf{CTC-Fluo-N2DH-GOWT1}: Fluorescent mouse stem cells
-  \item \textbf{Custom-Brightfield-Bacteria}: Bacterial growth in microfluidic chambers
-  \item \textbf{Custom-PhaseContrast-Fibroblasts}: Dense fibroblast cultures
-\end{itemize}
+% Our evaluation encompasses four benchmark datasets:
+% \begin{itemize}
+%   \item \textbf{CTC-DIC-HeLa}: Phase-contrast HeLa cells with division events
+%   \item \textbf{CTC-Fluo-N2DH-GOWT1}: Fluorescent mouse stem cells
+%   \item \textbf{Custom-Brightfield-Bacteria}: Bacterial growth in microfluidic chambers
+%   \item \textbf{Custom-PhaseContrast-Fibroblasts}: Dense fibroblast cultures
+% \end{itemize}
 
-We report standard CTC metrics:
-\begin{itemize}
-  \item \textbf{TRA (Tracking Accuracy)}: Overall tracking performance combining detection and linking
-  \item \textbf{DET (Detection Performance)}: Segmentation quality and completeness
-  \item \textbf{SEG (Segmentation Accuracy)}: Pixel-level segmentation precision
-\end{itemize}
+% We report standard CTC metrics:
+% \begin{itemize}
+%   \item \textbf{TRA (Tracking Accuracy)}: Overall tracking performance combining detection and linking
+%   \item \textbf{DET (Detection Performance)}: Segmentation quality and completeness
+%   \item \textbf{SEG (Segmentation Accuracy)}: Pixel-level segmentation precision
+% \end{itemize}
 
-\subsubsection{Comparative Results}
+% \subsubsection{Comparative Results}
 
-CellSeek achieved performance comparable to optimally-configured TrackMate across all test scenarios:
+% CellSeek achieved performance comparable to optimally-configured TrackMate across all test scenarios:
 
-\begin{table}[H]
-  \centering
-  \caption{Performance comparison across benchmark datasets}
-  \begin{tabular}{lccc}
-    \toprule
-    \textbf{Dataset}   & \textbf{CellSeek TRA} & \textbf{TrackMate TRA} & \textbf{Processing Time} \\
-    \midrule
-    CTC-DIC-HeLa       & 0.842 ± 0.031         & 0.856 ± 0.028          & 4.2min vs 52min          \\
-    CTC-Fluo-N2DH      & 0.891 ± 0.022         & 0.903 ± 0.019          & 3.8min vs 41min          \\
-    Custom-Bacteria    & 0.765 ± 0.045         & 0.771 ± 0.041          & 5.1min vs 73min          \\
-    Custom-Fibroblasts & 0.723 ± 0.052         & 0.748 ± 0.039          & 6.3min vs 89min          \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+% \begin{table}[H]
+%   \centering
+%   \caption{Performance comparison across benchmark datasets}
+%   \begin{tabular}{lccc}
+%     \toprule
+%     \textbf{Dataset}   & \textbf{CellSeek TRA} & \textbf{TrackMate TRA} & \textbf{Processing Time} \\
+%     \midrule
+%     CTC-DIC-HeLa       & 0.842 ± 0.031         & 0.856 ± 0.028          & 4.2min vs 52min          \\
+%     CTC-Fluo-N2DH      & 0.891 ± 0.022         & 0.903 ± 0.019          & 3.8min vs 41min          \\
+%     Custom-Bacteria    & 0.765 ± 0.045         & 0.771 ± 0.041          & 5.1min vs 73min          \\
+%     Custom-Fibroblasts & 0.723 ± 0.052         & 0.748 ± 0.039          & 6.3min vs 89min          \\
+%     \bottomrule
+%   \end{tabular}
+% \end{table}
 
-Importantly, CellSeek achieved these results consistently across users with varying expertise levels, while TrackMate performance showed strong dependence on user experience and dataset-specific parameter optimization.
+% Importantly, CellSeek achieved these results consistently across users with varying expertise levels, while TrackMate performance showed strong dependence on user experience and dataset-specific parameter optimization.
 
-\subsection{Generalization Across Imaging Modalities}
+% \subsection{Generalization Across Imaging Modalities}
 
-To validate our "generalization" claim, we tested CellSeek across diverse imaging conditions without parameter modification:
+% To validate our "generalization" claim, we tested CellSeek across diverse imaging conditions without parameter modification:
 
-\textbf{Fluorescence Microscopy:} Successfully tracked nuclear markers (DAPI, H2B-GFP) and cytoplasmic labels (CellTracker, GFP) across multiple cell lines (HeLa, U2OS, NIH3T3).
+% \textbf{Fluorescence Microscopy:} Successfully tracked nuclear markers (DAPI, H2B-GFP) and cytoplasmic labels (CellTracker, GFP) across multiple cell lines (HeLa, U2OS, NIH3T3).
 
-\textbf{Phase-Contrast:} Robust performance on standard phase-contrast images with varying cell densities and morphologies.
+% \textbf{Phase-Contrast:} Robust performance on standard phase-contrast images with varying cell densities and morphologies.
 
-\textbf{Brightfield:} Effective tracking of bacterial colonies and mammalian cells in brightfield illumination.
+% \textbf{Brightfield:} Effective tracking of bacterial colonies and mammalian cells in brightfield illumination.
 
-\textbf{Live-Cell Imaging:} Maintained tracking accuracy across multi-hour time-lapse sequences with cell divisions and morphological changes.
+% \textbf{Live-Cell Imaging:} Maintained tracking accuracy across multi-hour time-lapse sequences with cell divisions and morphological changes.
 
-\subsection{Failure Mode Analysis}
+% \subsection{Failure Mode Analysis}
 
-CellSeek exhibits predictable failure modes that align with fundamental limitations of the underlying foundation models:
+% CellSeek exhibits predictable failure modes that align with fundamental limitations of the underlying foundation models:
 
-\begin{itemize}
-  \item \textbf{Extreme Cell Density:} When cells are too densely packed for SAM to distinguish boundaries (>80\% confluence)
-  \item \textbf{Low Signal-to-Noise:} Very dim or noisy images that challenge even foundation model robustness
-  \item \textbf{Rapid Morphological Changes:} Cells undergoing dramatic shape changes that exceed the adapted Cutie's last-frame temporal consistency assumptions
-  \item \textbf{Complex Division Events:} Multi-daughter divisions or asymmetric divisions that violate tracking assumptions
-\end{itemize}
+% \begin{itemize}
+%   \item \textbf{Extreme Cell Density:} When cells are too densely packed for SAM to distinguish boundaries (>80\% confluence)
+%   \item \textbf{Low Signal-to-Noise:} Very dim or noisy images that challenge even foundation model robustness
+%   \item \textbf{Rapid Morphological Changes:} Cells undergoing dramatic shape changes that exceed the adapted Cutie's last-frame temporal consistency assumptions
+%   \item \textbf{Complex Division Events:} Multi-daughter divisions or asymmetric divisions that violate tracking assumptions
+% \end{itemize}
 
-Importantly, these limitations are clearly communicated through the GUI's confidence indicators, allowing users to identify problematic regions and apply targeted manual corrections.
+% Importantly, these limitations are clearly communicated through the GUI's confidence indicators, allowing users to identify problematic regions and apply targeted manual corrections using the intuitive SAM interface.
 
-\section{Discussion}
+% \section{Discussion}
 
-\subsection{Paradigm Shift in Bioimage Analysis Tool Design}
+% \subsection{Paradigm Shift in Bioimage Analysis Tool Design}
 
-CellSeek represents a fundamental shift in bioimage analysis philosophy: from parameter-heavy, expert-requiring tools toward foundation model-powered systems that work effectively out-of-the-box. This transition mirrors broader trends in machine learning, where pre-trained models increasingly replace task-specific architectures that require extensive domain expertise to configure and optimize.
+% CellSeek represents a fundamental shift in bioimage analysis philosophy: from parameter-heavy, expert-requiring tools toward foundation model-powered systems that work effectively out-of-the-box. This transition mirrors broader trends in machine learning, where pre-trained models increasingly replace task-specific architectures that require extensive domain expertise to configure and optimize.
 
-Our results demonstrate that this paradigm shift can be achieved without sacrificing analytical rigor. By achieving comparable accuracy to expert-tuned TrackMate configurations while reducing analysis time by over 10-fold and eliminating the expertise barrier, CellSeek validates the "democratization through foundation models" hypothesis that has transformed other fields.
+% Our results demonstrate that this paradigm shift can be achieved without sacrificing analytical rigor. By achieving comparable accuracy to expert-tuned TrackMate configurations while reducing analysis time by over 10-fold and eliminating the expertise barrier, CellSeek validates the "democratization through foundation models" hypothesis that has transformed other fields.
 
-\subsection{Addressing the Complexity-Performance Trade-off}
+% \subsection{Addressing the Complexity-Performance Trade-off}
 
-A central criticism of simplified tools is that they sacrifice the fine-grained control that experts rely on for challenging datasets. Our approach addresses this through a tiered design philosophy:
+% A central criticism of simplified tools is that they sacrifice the fine-grained control that experts rely on for challenging datasets. Our approach addresses this through a tiered design philosophy:
 
-\textbf{Default Simplicity:} The primary workflow requires minimal user input and works well for 80-90\% of common tracking scenarios.
+% \textbf{Default Simplicity:} The primary workflow requires minimal user input and works well for 80-90\% of common tracking scenarios.
 
-\textbf{Guided Intervention:} When automatic processing fails, the system provides clear indicators of problematic regions and intuitive tools (SAM-based annotation) for targeted correction.
+% \textbf{Guided Intervention:} When automatic processing fails, the system provides clear indicators of problematic regions and intuitive tools (SAM-based annotation) for targeted correction.
 
-\textbf{Expert Override:} Power users can access underlying parameters through configuration files while maintaining the simplified GUI workflow.
+% \textbf{Expert Override:} Power users can access underlying parameters through configuration files while maintaining the simplified GUI workflow.
 
-This design acknowledges that no tool can be simultaneously simple and infinitely flexible, but argues that covering the vast majority of use cases with minimal complexity represents a net benefit to the field.
+% This design acknowledges that no tool can be simultaneously simple and infinitely flexible, but argues that covering the vast majority of use cases with minimal complexity represents a net benefit to the field.
 
-\subsection{Foundation Model Integration: Opportunities and Limitations}
+% \subsection{Foundation Model Integration: Opportunities and Limitations}
 
-Our work demonstrates both the promise and current limitations of foundation model integration in specialized scientific domains. SAM's zero-shot segmentation capabilities translate remarkably well to cellular imagery, while our adapted Cutie's simplified object-level tracking with last-frame memory proves robust to the morphological dynamics typical of cell tracking, offering significant computational efficiency improvements over previous approaches.
+% Our work demonstrates both the promise and current limitations of foundation model integration in specialized scientific domains. SAM's zero-shot segmentation capabilities translate remarkably well to cellular imagery, while our adapted Cutie's simplified object-level tracking with last-frame memory proves robust to the morphological dynamics typical of cell tracking, offering significant computational efficiency improvements over previous approaches.
 
-However, foundation models are not panaceas. They inherit the biases and limitations of their training data, which may not fully represent the diversity of biological imaging conditions. Our failure mode analysis reveals predictable boundaries: extremely dense cultures, very low SNR conditions, and complex division events that exceed the temporal consistency assumptions of current video segmentation models.
+% However, foundation models are not panaceas. They inherit the biases and limitations of their training data, which may not fully represent the diversity of biological imaging conditions. Our failure mode analysis reveals predictable boundaries: extremely dense cultures, very low SNR conditions, and complex division events that exceed the temporal consistency assumptions of current video segmentation models.
 
-These limitations suggest future directions: domain-specific foundation model training, hybrid approaches that combine foundation models with specialized biological priors, and adaptive systems that can automatically detect when foundation models are likely to fail and gracefully fall back to alternative strategies.
+% These limitations suggest future directions: domain-specific foundation model training, hybrid approaches that combine foundation models with specialized biological priors, and adaptive systems that can automatically detect when foundation models are likely to fail and gracefully fall back to alternative strategies.
 
-\subsection{Impact on Quantitative Biology Workflows}
+% \subsection{Impact on Quantitative Biology Workflows}
 
-The usability improvements demonstrated by CellSeek have implications beyond tracking efficiency. By reducing the barrier to quantitative analysis, simplified tools can enable:
+% The usability improvements demonstrated by CellSeek have implications beyond tracking efficiency. By reducing the barrier to quantitative analysis, simplified tools can enable:
 
-\textbf{Broader Adoption:} Researchers who previously avoided quantitative approaches due to complexity can now incorporate tracking into their workflows.
+% \textbf{Broader Adoption:} Researchers who previously avoided quantitative approaches due to complexity can now incorporate tracking into their workflows.
 
-\textbf{Increased Throughput:} The time savings enable analysis of larger datasets and more comprehensive experimental designs.
+% \textbf{Increased Throughput:} The time savings enable analysis of larger datasets and more comprehensive experimental designs.
 
-\textbf{Reproducibility:} Standardized, parameter-light workflows reduce variability between analyses and improve experimental reproducibility.
+% \textbf{Reproducibility:} Standardized, parameter-light workflows reduce variability between analyses and improve experimental reproducibility.
 
-\textbf{Educational Applications:} Simplified tools make quantitative methods more accessible for training the next generation of biologists.
+% \textbf{Educational Applications:} Simplified tools make quantitative methods more accessible for training the next generation of biologists.
 
-\subsection{Comparison with Contemporary Approaches}
+% \subsection{Comparison with Contemporary Approaches}
 
-While TrackMate remains the dominant platform for cell tracking, several contemporary approaches attempt to address similar usability challenges. DeepCell provides pre-trained models for specific cell types but lacks the generalization capabilities of foundation models. CellProfiler offers pipeline-based analysis but still requires significant parameter optimization. Recent deep learning tools like DiffusionTrack show promise but typically require training on specific datasets.
+% While TrackMate remains the dominant platform for cell tracking, several contemporary approaches attempt to address similar usability challenges. DeepCell provides pre-trained models for specific cell types but lacks the generalization capabilities of foundation models. CellProfiler offers pipeline-based analysis but still requires significant parameter optimization. Recent deep learning tools like DiffusionTrack show promise but typically require training on specific datasets.
 
-CellSeek's foundation model approach offers unique advantages: broad generalization without training, robust performance across modalities, and minimal parameter requirements. The integration of Cellpose-SAM provides proven segmentation capabilities derived from the established Cellpose framework, while our adapted Cutie's simplified object-level tracking specifically optimized for cell populations represents a significant advance over previous video object segmentation methods for cellular applications. However, it trades the ultimate flexibility of tools like TrackMate for simplified operation, a trade-off we argue benefits the majority of users.
+% CellSeek's foundation model approach offers unique advantages: broad generalization without training, robust performance across modalities, and minimal parameter requirements. The integration of Cellpose-SAM provides proven segmentation capabilities derived from the established Cellpose framework, while our adapted Cutie's simplified object-level tracking specifically optimized for cell populations represents a significant advance over previous video object segmentation methods for cellular applications. However, it trades the ultimate flexibility of tools like TrackMate for simplified operation, a trade-off we argue benefits the majority of users.
 
-\subsection{Future Directions and Limitations}
+% \subsection{Future Directions and Limitations}
 
-Several limitations in the current implementation suggest clear paths for future development:
+% Several limitations in the current implementation suggest clear paths for future development:
 
-\textbf{Cell Division Handling:} Enhanced algorithms for detecting and tracking division events, potentially through specialized foundation models trained on temporal cellular dynamics.
+% \textbf{Cell Division Handling:} Enhanced algorithms for detecting and tracking division events, potentially through specialized foundation models trained on temporal cellular dynamics.
 
-\textbf{3D Extension:} Adaptation to 3D+time datasets, leveraging emerging 3D foundation models and volumetric tracking approaches.
+% \textbf{3D Extension:} Adaptation to 3D+time datasets, leveraging emerging 3D foundation models and volumetric tracking approaches.
 
-\textbf{Real-time Processing:} Optimization for live-cell imaging applications where tracking must proceed in real-time.
+% \textbf{Real-time Processing:} Optimization for live-cell imaging applications where tracking must proceed in real-time.
 
-\textbf{Multi-object Tracking:} Extension beyond single-cell tracking to handle organelles, vesicles, and other subcellular structures.
+% \textbf{Multi-object Tracking:} Extension beyond single-cell tracking to handle organelles, vesicles, and other subcellular structures.
 
-\textbf{Foundation Model Evolution:} As foundation models continue to improve, CellSeek's performance will benefit automatically through model updates without requiring system redesign.
+% \textbf{Foundation Model Evolution:} As foundation models continue to improve, CellSeek's performance will benefit automatically through model updates without requiring system redesign.
 
-\subsection{Broader Implications for Scientific Software}
+% \subsection{Broader Implications for Scientific Software}
 
-CellSeek's success suggests broader principles for scientific software design in the foundation model era:
+% CellSeek's success suggests broader principles for scientific software design in the foundation model era:
 
-\begin{enumerate}
-  \item \textbf{Leverage Pre-trained Models:} Rather than building specialized algorithms from scratch, prioritize integration of powerful pre-trained models.
-  \item \textbf{Design for Non-experts:} Assume users lack specialized training in computer vision or machine learning.
-  \item \textbf{Provide Transparent Failure Modes:} When automation fails, make it clear why and provide intuitive correction mechanisms.
-  \item \textbf{Maintain Analytical Rigor:} Simplification should not compromise scientific validity or reproducibility.
-\end{enumerate}
+% \begin{enumerate}
+%   \item \textbf{Leverage Pre-trained Models:} Rather than building specialized algorithms from scratch, prioritize integration of powerful pre-trained models.
+%   \item \textbf{Design for Non-experts:} Assume users lack specialized training in computer vision or machine learning.
+%   \item \textbf{Provide Transparent Failure Modes:} When automation fails, make it clear why and provide intuitive correction mechanisms.
+%   \item \textbf{Maintain Analytical Rigor:} Simplification should not compromise scientific validity or reproducibility.
+% \end{enumerate}
 
-These principles may inform the development of foundation model-powered tools across other scientific domains where complex computational methods currently limit accessibility.
+% These principles may inform the development of foundation model-powered tools across other scientific domains where complex computational methods currently limit accessibility.
 
-\section{Conclusion}
+% \section{Conclusion}
 
-CellSeek demonstrates that foundation model integration can resolve the long-standing tension between analytical sophistication and practical usability in bioimage analysis. By achieving expert-level tracking performance while eliminating the expertise requirement, our approach suggests a new paradigm for scientific software development that prioritizes accessibility without sacrificing analytical rigor. The integration of Cellpose-SAM's proven segmentation capabilities with our adapted Cutie's simplified, cell-optimized tracking architecture represents a significant step forward in automated cell tracking technology.
+% CellSeek demonstrates that foundation model integration can resolve the long-standing tension between analytical sophistication and practical usability in bioimage analysis. By achieving expert-level tracking performance while eliminating the expertise requirement, our approach suggests a new paradigm for scientific software development that prioritizes accessibility without sacrificing analytical rigor. The integration of Cellpose-SAM's proven segmentation capabilities with our adapted Cutie's simplified, cell-optimized tracking architecture represents a significant step forward in automated cell tracking technology.
 
-The broader implications extend beyond cell tracking to the future of quantitative biology tools. As foundation models continue to improve, we anticipate a shift toward simplified, broadly applicable systems that democratize access to cutting-edge computational methods. CellSeek represents an early example of this transition, providing a template for how complex computer vision workflows can be transformed into accessible, biologist-friendly tools through thoughtful integration of established and emerging foundation models.
+% The broader implications extend beyond cell tracking to the future of quantitative biology tools. As foundation models continue to improve, we anticipate a shift toward simplified, broadly applicable systems that democratize access to cutting-edge computational methods. CellSeek represents an early example of this transition, providing a template for how complex computer vision workflows can be transformed into accessible, biologist-friendly tools through thoughtful integration of established and emerging foundation models.
 
-Our work validates the hypothesis that the era of requiring specialized expertise for routine quantitative analyses is ending. By building bridges between foundation models and biological applications, we can ensure that the benefits of computational advances reach the entire scientific community, not just computational specialists. In this vision, tools like CellSeek are not just software applications, but enablers of a more inclusive and quantitative approach to biological discovery.
+% Our work validates the hypothesis that the era of requiring specialized expertise for routine quantitative analyses is ending. By building bridges between foundation models and biological applications, we can ensure that the benefits of computational advances reach the entire scientific community, not just computational specialists. In this vision, tools like CellSeek are not just software applications, but enablers of a more inclusive and quantitative approach to biological discovery.
 
 \end{document}
