@@ -1,0 +1,19 @@
+\documentclass[../cellseek_paper.tex]{subfiles}
+
+\begin{document}
+
+\section{Introduction}
+
+Cell tracking in microscopy videos represents a fundamental challenge in quantitative cell biology, requiring the accurate detection, segmentation, and temporal association of individual cells across video sequences. While this capability is essential for understanding cellular dynamics, migration patterns, and lineage relationships, the complexity of current analysis tools creates a significant barrier between cutting-edge algorithms and their practical application by biologists.
+
+The current landscape of cell tracking tools presents a paradox: as algorithms have become more sophisticated and accurate, they have simultaneously become more complex and difficult to use. TrackMate, widely regarded as the gold standard for cell tracking, exemplifies this challenge. Despite offering state-of-the-art detection algorithms (StarDist, Cellpose) and robust linking methods (LAP trackers), TrackMate's extensive parameter space—encompassing dozens of adjustable settings across detection, filtering, and linking stages—demands significant expertise to navigate effectively. Users must understand the nuances of blob detection thresholds, feature selection criteria, linking costs, and gap-closing parameters, often requiring iterative optimization cycles that can span hours or days for a single dataset.
+
+This complexity barrier has profound implications for the field. Many biologists resort to manual tracking or simplified tools that sacrifice accuracy for usability, while others abandon quantitative analysis altogether. Even when sophisticated tools are successfully applied, the parameter optimization process is rarely transferable between experiments, requiring repeated expert intervention for each new dataset or imaging condition.
+
+Recent advances in foundation models present an unprecedented opportunity to resolve this usability crisis. The Segment Anything Model (SAM) has demonstrated remarkable zero-shot segmentation capabilities across diverse visual domains, while advanced video object segmentation networks like Cutie excel at maintaining object identities through complex temporal dynamics. However, for cellular applications, we can adapt these models to better suit the specific characteristics of cell tracking, where objects within populations exhibit highly similar morphological features. These models suggest a new paradigm: rather than requiring users to configure complex pipelines, we can leverage pre-trained foundation models that work effectively out-of-the-box.
+
+We present CellSeek, a computational pipeline that bridges state-of-the-art computer vision techniques with practical biological applications through radical simplification. Our approach eliminates the parameter optimization bottleneck by integrating Cellpose-SAM—a specialized adaptation of SAM derived from the Cellpose framework for cellular segmentation—with an adapted Cutie temporal tracking architecture that focuses on last-frame memory rather than long-term appearance history, specifically optimized for cellular imaging scenarios.
+
+Crucially, CellSeek includes an intuitive graphical interface that transforms complex computer vision operations into simple, biologist-friendly interactions. Our central hypothesis is that foundation model integration can achieve the "90-10 rule": covering 90% of common tracking scenarios with 10% of the effort required by existing tools.
+
+\end{document}

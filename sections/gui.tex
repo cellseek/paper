@@ -1,0 +1,47 @@
+\documentclass[../cellseek_paper.tex]{subfiles}
+
+\begin{document}
+
+\section{CellSeek GUI: User-Friendly Interface for Biologists}
+
+To make CellSeek accessible to biologists without programming expertise, we developed a comprehensive PyQt6-based GUI that transforms complex computer vision algorithms into an intuitive workflow tool.
+
+\subsection{Design and Architecture}
+
+The interface features a dark-themed design optimized for microscopy data analysis and employs a modular tab system: Frame Management, Segmentation, Tracking, Analysis, and Export. This workflow-oriented organization provides immediate visual feedback while preserving session state for resumable analyses.
+
+\subsection{Frame Management and Data Import}
+
+The Frame Manager supports drag-and-drop import of multiple formats including standard images (PNG, JPEG, TIFF), videos (MP4, AVI, MOV), and specialized microscopy formats (CZI, LSM, ND2). The system automatically sorts frames chronologically and provides efficient thumbnail navigation with progressive loading for large datasets.
+
+\subsection{Segmentation Interface}
+
+The segmentation panel offers both preset configurations and expert-level parameter control with intelligent validation. Key parameters include cell diameter (5-200 pixels), flow threshold (0.1-2.0), cell probability threshold (-6.0 to 6.0), and device selection. Context-sensitive tooltips explain each parameter's biological significance, while real-time progress monitoring provides processing status and intermediate previews.
+
+\subsection{Interactive Segmentation Correction}
+
+A key innovation in CellSeek's interface is the seamless integration of SAM's interactive capabilities for segmentation correction. After automatic segmentation of the first frame, users can intuitively correct any errors using SAM's point-and-click interface:
+
+\begin{itemize}
+  \item \textbf{Positive Points}: Click to add foreground (cell) regions
+  \item \textbf{Negative Points}: Ctrl+Click to exclude background regions
+  \item \textbf{Bounding Box}: Drag to define region of interest for segmentation
+  \item \textbf{Real-time Feedback}: Immediate visual updates show segmentation changes
+\end{itemize}
+
+This interactive correction process is significantly more intuitive than traditional pixel-level editing tools, allowing biologists to achieve accurate segmentations with minimal effort.
+
+\subsection{Temporal Tracking Interface}
+
+The tracking interface provides a side-by-side comparison view showing the previous frame with established segmentation alongside the current frame being processed. This visual feedback allows users to:
+
+\begin{itemize}
+  \item Monitor tracking progress frame-by-frame
+  \item Identify tracking errors as they occur
+  \item Intervene at any point to correct segmentation using SAM tools
+  \item Navigate freely between frames to review and edit results
+\end{itemize}
+
+The interface maintains full editability throughout the tracking process, enabling users to correct errors at any stage without restarting the entire analysis.
+
+\end{document}

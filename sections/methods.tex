@@ -1,0 +1,144 @@
+\documentclass[../cellseek_paper.tex]{subfiles}
+
+\begin{document}
+
+\section{Methods}
+
+\subsection{System Architecture}
+
+\begin{figure}[h!]
+  \centering
+  \input{../figures/system_architecture}
+  \caption{The CellSeek system architecture. The pipeline processes microscopy videos through two main stages: (1) the Cellpose-SAM module performs automatic instance segmentation on each frame, and (2) the adapted Cutie tracker maintains cell identities across time using only last-frame memory ($\mathcal{M}_{t-1}$) and object queries ($\mathbf{Q}_{t-1}$), which are updated each frame. This design eliminates complex parameter tuning while maintaining robust tracking performance.}
+  \label{fig:architecture}
+\end{figure}
+
+CellSeek consists of three main components operating in a sequential pipeline: (1) Cellpose-SAM for initial cellular segmentation, and (2) adapted Cutie-based temporal tracking that uses only last-frame memory for efficient cell tracking. The system architecture is designed to minimize error propagation between components while maximizing the utilization of each module's specialized capabilities and the specific characteristics of cellular imaging.
+
+The pipeline takes a microscopy video $V = \{I_1, I_2, \ldots, I_T\}$ where $I_t \in \mathbb{R}^{H \times W \times 3}$ represents the $t$-th frame, and outputs a sequence of segmentation masks $M = \{M_1, M_2, \ldots, M_T\}$ where $M_t \in \mathbb{Z}^{H \times W}$ contains integer cell identifiers for tracked cells at frame $t$.
+
+\subsection{Cellpose-SAM: Cellular Segmentation Module}
+
+\subsubsection{Architecture Overview}
+
+Cellpose-SAM represents a strategic surgical transplant of the Segment Anything Model (SAM) for biological instance segmentation. Rather than adapting SAM's prompt-based architecture, Cellpose-SAM takes a fundamentally different approach: it discards SAM's entire decoder and retains only the powerful pretrained image encoder, replacing the complex prompt-based decoder with a simple Cellpose-style output head.
+
+\begin{figure}[h!]
+  \centering
+  \input{../figures/cellpose_sam_architecture_tikz}
+  \caption{Cellpose-SAM architecture overview. The model combines SAM's pretrained ViT-L encoder (adapted from 1024×1024 to 256×256 resolution) with Cellpose's flow field output head. Unlike SAM's complex prompt-based decoder, this hybrid approach uses simple transposed convolutions to generate cell probability maps and flow fields, which are then processed through Cellpose's gradient tracking algorithm to produce instance masks.}
+  \label{fig:cellpose_sam_arch}
+\end{figure}
+
+This architectural choice leverages the broad visual knowledge from SAM's billion-mask pre-training while maintaining the efficiency and proven performance of the Cellpose framework for dense instance segmentation.
+
+The architecture consists of three main components:
+
+\begin{enumerate}
+  \item \textbf{Modified ViT-L Encoder}: A customized version of SAM's Vision Transformer Large backbone, adapted for 256×256 microscopy images with architectural modifications for cellular imaging
+  \item \textbf{Cellpose Output Head}: A simple transposed convolution layer that maps transformer features to Cellpose-specific flow field and probability representations
+  \item \textbf{Cellpose Mask Reconstruction}: Algorithmic post-processing that converts flow fields into instance masks using gradient tracking dynamics
+\end{enumerate}
+
+\subsubsection{Modified ViT-L Encoder Architecture}
+
+The Cellpose-SAM encoder is based on SAM's ViT-L backbone but includes several critical modifications optimized for microscopy imaging:
+
+\textbf{Architectural Specifications:}
+\begin{itemize}
+  \item \textbf{Base Model}: ViT-L with 24 transformer blocks and 1024 embedding dimensions
+  \item \textbf{Input Resolution}: Reduced from SAM's default 1024×1024 to 256×256, optimized for typical cellular imaging scales
+  \item \textbf{Patch Size}: Reduced from 16×16 to 8×8 to preserve higher spatial resolution in feature representations
+  \item \textbf{Attention Mechanism}: All layers use standard global self-attention (unlike SAM's hybrid local/global pattern), simplifying the architecture with minimal runtime penalty due to smaller input size
+\end{itemize}
+
+\textbf{Adaptation Process:}
+\begin{itemize}
+  \item \textbf{Patch Embedding}: Convolutional filters adapted via appropriate subsampling to work with 8×8 patches
+  \item \textbf{Position Embeddings}: SAM's pretrained position embeddings downsampled by factor of 2 to match new grid dimensions (32×32 feature grid from 256÷8)
+\end{itemize}
+
+\subsubsection{Cellpose Output Head and Mask Reconstruction}
+
+The decoder architecture abandons SAM's complex prompt-based design in favor of Cellpose's proven flow field approach:
+
+\begin{algorithm}[H]
+  \caption{Cellpose-SAM Processing Pipeline}
+  \begin{algorithmic}[1]
+    \REQUIRE Input image $I \in \mathbb{R}^{256 \times 256 \times 3}$
+    \ENSURE Instance segmentation masks $\{M_1, M_2, \ldots, M_N\}$
+    \STATE $\text{features} \leftarrow \text{Modified\_ViT\_L}(I)$ \COMMENT{Output: $[B, 1024, 32, 32]$}
+    \STATE $\text{upsampled} \leftarrow \text{TransposedConv}(\text{features})$ \COMMENT{Upsample to $256 \times 256$}
+    \STATE $[\text{cellprob}, \text{dx}, \text{dy}] \leftarrow \text{OutputHead}(\text{upsampled})$ \COMMENT{3-channel output}
+    \STATE $\text{masks} \leftarrow \text{CellposeReconstruction}(\text{dx}, \text{dy}, \text{cellprob})$ \COMMENT{Gradient tracking}
+    \RETURN $\text{masks}$
+  \end{algorithmic}
+\end{algorithm}
+
+\textbf{Output Representations:}
+\begin{itemize}
+  \item \textbf{Cell Probability Map}: Single channel indicating probability of each pixel being at a cell center
+  \item \textbf{Horizontal Flow (dx)}: X-component of vector pointing from each pixel to its cell center
+  \item \textbf{Vertical Flow (dy)}: Y-component of vector pointing from each pixel to its cell center
+\end{itemize}
+
+The final instance masks are generated through Cellpose's gradient tracking algorithm, where flow vectors are followed until convergence at cell centers, with pixels converging to the same center grouped into instance masks.
+
+The model was extensively fine-tuned on aggregated biological datasets including Cellpose, TissueNet, Omnipose, DeepBacs, and MoNuSeg. This specialized training process adapts SAM's general architecture to the specific morphological characteristics of cellular structures while preserving its inherent generalization capabilities across diverse imaging conditions.
+
+\subsection{Temporal Tracking with Cutie}
+
+\subsubsection{CellSeek Cutie Adaptation}
+
+The temporal tracking component utilizes an adapted version of Cutie, a video object segmentation network that employs object-level memory reading to maintain consistent object identities across frames. For CellSeek, we have made a crucial adaptation to the original Cutie architecture by removing long-term memory and focusing exclusively on last-frame memory. This modification is specifically motivated by the characteristics of cellular imaging: cells within the same population exhibit highly similar morphological features, making long-term appearance memory redundant and potentially counterproductive.
+
+Our adapted Cutie architecture addresses the unique challenges of cell tracking by leveraging the fact that cellular identity is better maintained through spatial proximity and immediate temporal context rather than accumulated appearance history. The simplified architecture consists of three core components:
+
+\begin{enumerate}
+  \item \textbf{Query-based Object Transformer}: Adapts object queries for high-level object representation
+  \item \textbf{Last-Frame Memory Reader}: Retrieves relevant information exclusively from the previous frame
+  \item \textbf{Foreground-Background Masked Attention}: Cleanly separates object semantics from background
+\end{enumerate}
+
+\subsubsection{Memory Architecture for Cell Tracking}
+
+Unlike the original Cutie which maintains extensive temporal memory banks, our adaptation employs a streamlined memory system that stores only the most recent frame information. This design choice provides several advantages specific to cell tracking:
+
+\begin{itemize}
+  \item \textbf{Reduced Memory Footprint}: Elimination of long-term memory significantly reduces computational requirements
+  \item \textbf{Improved Specificity}: Cells of the same type share nearly identical appearances, making long-term memory potentially confusing rather than helpful
+  \item \textbf{Enhanced Real-time Performance}: Simplified memory management enables faster processing suitable for interactive applications
+  \item \textbf{Reduced Error Accumulation}: Shorter memory prevents the propagation of segmentation errors over long temporal sequences
+\end{itemize}
+
+\subsubsection{Last-Frame Memory Representation}
+
+Our adapted Cutie maintains a simplified memory structure that focuses on immediate temporal context:
+
+\begin{align}
+  \mathcal{M}_{current} & = \{\mathbf{k}^{t-1}, \mathbf{v}^{t-1}\}_{t-1} \\
+  \mathcal{Q}_{objects} & = \{\mathbf{q}_i^{obj}\}_{i=1}^{N_{cells}}
+\end{align}
+
+where $\mathbf{k}^{t-1}, \mathbf{v}^{t-1}$ represent key-value features from frame $t-1$ only, and $\mathbf{q}_i^{obj}$ represents object queries for each tracked cell that are updated frame-by-frame without long-term accumulation.
+
+\subsubsection{Tracking Algorithm}
+
+The adapted Cutie tracking process operates with last-frame memory only:
+
+\begin{algorithm}[H]
+  \caption{CellSeek Adapted Cutie Tracking}
+  \begin{algorithmic}[1]
+    \REQUIRE Current frame $I_t$, previous frame features $\mathcal{M}_{t-1}$, object queries $\mathbf{Q}_{t-1}$
+    \ENSURE Predicted mask $M_t$, updated queries $\mathbf{Q}_t$
+    \STATE $\mathbf{f}_t \leftarrow \text{FeatureExtractor}(I_t)$
+    \STATE $\mathbf{Q}_t^{init} \leftarrow \text{QueryUpdate}(\mathbf{Q}_{t-1}, \mathcal{M}_{t-1})$
+    \STATE $\mathbf{f}_t^{enhanced} \leftarrow \text{QueryTransformer}(\mathbf{Q}_t^{init}, \mathbf{f}_t)$
+    \STATE $M_t \leftarrow \text{MaskDecoder}(\mathbf{f}_t^{enhanced})$
+    \STATE $\mathcal{M}_t \leftarrow \text{ExtractFeatures}(I_t, M_t)$ \COMMENT{Store only current frame}
+    \STATE $\mathbf{Q}_t \leftarrow \text{UpdateQueries}(\mathbf{Q}_t^{init}, M_t)$
+    \RETURN $M_t, \mathbf{Q}_t$
+  \end{algorithmic}
+\end{algorithm}
+
+\end{document}

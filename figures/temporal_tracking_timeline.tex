@@ -1,0 +1,66 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning, fit, shadows}
+
+\begin{document}
+
+\begin{tikzpicture}[
+    frame/.style={rectangle, draw, thick, fill=blue!20, minimum width=1.5cm, minimum height=2cm, align=center},
+    memory/.style={rectangle, draw, thick, fill=orange!30, minimum width=1.2cm, minimum height=0.6cm, align=center},
+    query/.style={ellipse, draw, thick, fill=green!30, minimum width=1cm, minimum height=0.5cm, align=center},
+    arrow/.style={->, >=stealth, thick},
+    time_arrow/.style={->, >=stealth, very thick, blue}
+  ]
+
+  % Timeline
+  \draw[time_arrow] (0,0) -- (12,0);
+  \node[below] at (6,-0.5) {\textbf{Time}};
+
+  % Frames
+  \node[frame] (f1) at (2,2) {Frame\\$t-2$};
+  \node[frame] (f2) at (5,2) {Frame\\$t-1$};
+  \node[frame] (f3) at (8,2) {Frame\\$t$};
+  \node[frame] (f4) at (11,2) {Frame\\$t+1$};
+
+  % Memory blocks (only from previous frame)
+  \node[memory] (m1) at (5,4) {$\mathcal{M}_{t-1}$};
+  \node[memory] (m2) at (8,4) {$\mathcal{M}_{t}$};
+  \node[memory] (m3) at (11,4) {$\mathcal{M}_{t+1}$};
+
+  % Object queries
+  \node[query] (q1) at (5,0.5) {$\mathbf{Q}_{t-1}$};
+  \node[query] (q2) at (8,0.5) {$\mathbf{Q}_{t}$};
+  \node[query] (q3) at (11,0.5) {$\mathbf{Q}_{t+1}$};
+
+  % Memory flow (only last frame)
+  \draw[arrow, red, thick] (m1) -- (f3);
+  \draw[arrow, red, thick] (m2) -- (f4);
+
+  % Query updates
+  \draw[arrow, green!70!black] (q1) -- (q2);
+  \draw[arrow, green!70!black] (q2) -- (q3);
+
+  % Memory updates
+  \draw[arrow, orange!70!black] (f2) -- (m1);
+  \draw[arrow, orange!70!black] (f3) -- (m2);
+  \draw[arrow, orange!70!black] (f4) -- (m3);
+
+  % Cross out older memories to show they're not used
+  \node[memory, pattern=north east lines, opacity=0.3] (old_m) at (2,4) {$\mathcal{M}_{t-2}$};
+  \draw[thick, red, opacity=0.7] (old_m.south west) -- (old_m.north east);
+  \draw[thick, red, opacity=0.7] (old_m.south east) -- (old_m.north west);
+
+  % Annotations
+  \node[align=center, font=\small] at (3.5,5.5) {\textbf{Last-Frame Only}\\Memory Architecture};
+  \node[align=center, font=\small] at (6.5,6) {Only $\mathcal{M}_{t-1}$ used\\for frame $t$ processing};
+
+  % Legend
+  \node[align=left, font=\scriptsize] at (0.5,5) {
+    \textcolor{red}{$\longrightarrow$} Memory Read\\
+    \textcolor{green!70!black}{$\longrightarrow$} Query Update\\
+    \textcolor{orange!70!black}{$\longrightarrow$} Memory Store
+  };
+
+\end{tikzpicture}
+
+\end{document}

@@ -1,0 +1,38 @@
+\begin{tikzpicture}[
+		% Define styles
+		block/.style={rectangle, draw, thick, fill=blue!10, minimum width=3cm, minimum height=1.2cm, align=center},
+		data/.style={rectangle, draw, thick, fill=green!10, rounded corners, minimum height=1.2cm, align=center},
+		arrow/.style={->, >=stealth, thick},
+		label/.style={text width=3cm, align=center}
+	]
+
+	% Input
+	\node[data, fill=red!15] (input) at (0,0) {\textbf{Input}\\Microscopy Video\\$V = \{I_1, I_2, ..., I_T\}$};
+
+	% Cellpose-SAM Block
+	\node[block, right=2.5cm of input] (cellpose) {SAM Segmentation Module};
+	\draw[arrow] (input) -- node[above, align=center] {\scriptsize Frame $I_t$} (cellpose);
+
+	% Output of Cellpose-SAM
+	\node[data, right=2.5cm of cellpose] (masks) {\textbf{Initial Masks}\\$M^{init}_t$ for frame $t$};
+	\draw[arrow] (cellpose) -- (masks);
+
+	% Adapted Cutie Block
+	\node[block, below=2cm of cellpose] (cutie) {Cutie Temporal Tracker};
+
+	% Memory flow (feedback loop)
+	\node[data, left=1.2cm of cutie] (memory) {\textbf{Memory}\\$\mathcal{M}_{t-1}, \mathbf{Q}_{t-1}$};
+	\draw[arrow] (memory) -- (cutie);
+
+	% Flow from Masks to Cutie
+	\draw[arrow] (masks.south) -- ++(0,-1) -| node[pos=0.25, above] {\scriptsize $M^{init}_t$} (cutie.north);
+
+	% Final Output
+	\node[data, fill=blue!15, right=2.5cm of cutie] (output) {\textbf{Output}\\Tracked Masks\\$M_t$ with IDs};
+	\draw[arrow] (cutie) -- node[above] {\scriptsize $M_t, \mathbf{Q}_t$} (output);
+
+	% Annotations
+	\node[above=0.2cm of cellpose, label] {Automatic Segmentation};
+	\node[below=0.2cm of cutie, label]{Temporal Tracking};
+
+\end{tikzpicture}

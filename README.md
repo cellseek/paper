@@ -1,3 +1,3 @@
-# CellSeek Paper
+# CellSeek Paper - Modular Structure
 
-This folder contains the LaTeX source files and references for the CellSeek paper.
+This directory contains the CellSeek paper split into modular components for easier management and collaboration.

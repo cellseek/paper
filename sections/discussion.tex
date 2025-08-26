@@ -1,0 +1,78 @@
+\documentclass[../cellseek_paper.tex]{subfiles}
+
+\begin{document}
+
+\section{Discussion}
+
+\subsection{Paradigm Shift in Bioimage Analysis Tool Design}
+
+CellSeek represents a fundamental shift in bioimage analysis philosophy: from parameter-heavy, expert-requiring tools toward foundation model-powered systems that work effectively out-of-the-box. This transition mirrors broader trends in machine learning, where pre-trained models increasingly replace task-specific architectures that require extensive domain expertise to configure and optimize.
+
+Our results demonstrate that this paradigm shift can be achieved without sacrificing analytical rigor. By achieving comparable accuracy to expert-tuned TrackMate configurations while reducing analysis time by over 10-fold and eliminating the expertise barrier, CellSeek validates the "democratization through foundation models" hypothesis that has transformed other fields.
+
+\subsection{Addressing the Complexity-Performance Trade-off}
+
+A central criticism of simplified tools is that they sacrifice the fine-grained control that experts rely on for challenging datasets. Our approach addresses this through a tiered design philosophy:
+
+\textbf{Default Simplicity:} The primary workflow requires minimal user input and works well for 80-90\% of common tracking scenarios.
+
+\textbf{Guided Intervention:} When automatic processing fails, the system provides clear indicators of problematic regions and intuitive tools (SAM-based annotation) for targeted correction.
+
+\textbf{Expert Override:} Power users can access underlying parameters through configuration files while maintaining the simplified GUI workflow.
+
+This design acknowledges that no tool can be simultaneously simple and infinitely flexible, but argues that covering the vast majority of use cases with minimal complexity represents a net benefit to the field.
+
+\subsection{Foundation Model Integration: Opportunities and Limitations}
+
+Our work demonstrates both the promise and current limitations of foundation model integration in specialized scientific domains. SAM's zero-shot segmentation capabilities translate remarkably well to cellular imagery, while our adapted Cutie's simplified object-level tracking with last-frame memory proves robust to the morphological dynamics typical of cell tracking, offering significant computational efficiency improvements over previous approaches.
+
+However, foundation models are not panaceas. They inherit the biases and limitations of their training data, which may not fully represent the diversity of biological imaging conditions. Our failure mode analysis reveals predictable boundaries: extremely dense cultures, very low SNR conditions, and complex division events that exceed the temporal consistency assumptions of current video segmentation models.
+
+These limitations suggest future directions: domain-specific foundation model training, hybrid approaches that combine foundation models with specialized biological priors, and adaptive systems that can automatically detect when foundation models are likely to fail and gracefully fall back to alternative strategies.
+
+\subsection{Impact on Quantitative Biology Workflows}
+
+The usability improvements demonstrated by CellSeek have implications beyond tracking efficiency. By reducing the barrier to quantitative analysis, simplified tools can enable:
+
+\textbf{Broader Adoption:} Researchers who previously avoided quantitative approaches due to complexity can now incorporate tracking into their workflows.
+
+\textbf{Increased Throughput:} The time savings enable analysis of larger datasets and more comprehensive experimental designs.
+
+\textbf{Reproducibility:} Standardized, parameter-light workflows reduce variability between analyses and improve experimental reproducibility.
+
+\textbf{Educational Applications:} Simplified tools make quantitative methods more accessible for training the next generation of biologists.
+
+\subsection{Comparison with Contemporary Approaches}
+
+While TrackMate remains the dominant platform for cell tracking, several contemporary approaches attempt to address similar usability challenges. DeepCell provides pre-trained models for specific cell types but lacks the generalization capabilities of foundation models. CellProfiler offers pipeline-based analysis but still requires significant parameter optimization. Recent deep learning tools like DiffusionTrack show promise but typically require training on specific datasets.
+
+CellSeek's foundation model approach offers unique advantages: broad generalization without training, robust performance across modalities, and minimal parameter requirements. The integration of Cellpose-SAM provides proven segmentation capabilities derived from the established Cellpose framework, while our adapted Cutie's simplified object-level tracking specifically optimized for cell populations represents a significant advance over previous video object segmentation methods for cellular applications. However, it trades the ultimate flexibility of tools like TrackMate for simplified operation, a trade-off we argue benefits the majority of users.
+
+\subsection{Future Directions and Limitations}
+
+Several limitations in the current implementation suggest clear paths for future development:
+
+\textbf{Cell Division Handling:} Enhanced algorithms for detecting and tracking division events, potentially through specialized foundation models trained on temporal cellular dynamics.
+
+\textbf{3D Extension:} Adaptation to 3D+time datasets, leveraging emerging 3D foundation models and volumetric tracking approaches.
+
+\textbf{Real-time Processing:} Optimization for live-cell imaging applications where tracking must proceed in real-time.
+
+\textbf{Multi-object Tracking:} Extension beyond single-cell tracking to handle organelles, vesicles, and other subcellular structures.
+
+\textbf{Foundation Model Evolution:} As foundation models continue to improve, CellSeek's performance will benefit automatically through model updates without requiring system redesign.
+
+\subsection{Broader Implications for Scientific Software}
+
+CellSeek's success suggests broader principles for scientific software design in the foundation model era:
+
+\begin{enumerate}
+  \item \textbf{Leverage Pre-trained Models:} Rather than building specialized algorithms from scratch, prioritize integration of powerful pre-trained models.
+  \item \textbf{Design for Non-experts:} Assume users lack specialized training in computer vision or machine learning.
+  \item \textbf{Provide Transparent Failure Modes:} When automation fails, make it clear why and provide intuitive correction mechanisms.
+  \item \textbf{Maintain Analytical Rigor:} Simplification should not compromise scientific validity or reproducibility.
+\end{enumerate}
+
+These principles may inform the development of foundation model-powered tools across other scientific domains where complex computational methods currently limit accessibility.
+
+\end{document}
