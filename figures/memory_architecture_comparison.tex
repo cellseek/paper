@@ -2,7 +2,8 @@
     memory/.style={rectangle, draw, thick, fill=blue!20, minimum width=2cm, minimum height=0.8cm, align=center},
     memory_light/.style={rectangle, draw, thick, fill=blue!10, minimum width=2cm, minimum height=0.8cm, align=center},
     processor/.style={rectangle, draw, thick, fill=green!20, minimum width=2.5cm, minimum height=1cm, align=center},
-    arrow/.style={->, >=stealth, thick},
+    arrow/.style={->, >=stealth, thick, color=black!70},
+    disabled_arrow/.style={->, >=stealth, thick, color=red!50, dashed},
     title/.style={font=\large\bfseries}
   ]
 
@@ -19,14 +20,16 @@
   % Memory reader
   \node[processor] (reader1) at (3,3.5) {Memory\\Reader};
 
-  % Arrows from all memories
-  \foreach \i in {1,2,3,4,5} {
-      \draw[arrow] (mem\i) -- (reader1);
-    }
+  % Improved arrows from all memories - connecting to specific anchor points
+  \draw[arrow] (mem1.east) -- (reader1.west);
+  \draw[arrow] (mem2.east) -- (reader1.west);
+  \draw[arrow] (mem3.east) -- (reader1.west);
+  \draw[arrow] (mem4.east) -- (reader1.west);
+  \draw[arrow] (mem5.east) -- (reader1.west);
 
   % Current frame
   \node[memory, fill=yellow!30] (current1) at (6,3.5) {Current\\Frame $t$};
-  \draw[arrow] (reader1) -- (current1);
+  \draw[arrow] (reader1.east) -- (current1.west);
 
   % Separator line
   \draw[thick, dashed] (-1,0.5) -- (7,0.5);
@@ -44,12 +47,18 @@
   % Simplified memory reader
   \node[processor, fill=orange!20] (reader2) at (3,-3) {Last-Frame\\Memory Reader};
 
-  % Arrow from only last frame
-  \draw[arrow] (last_mem) -- (reader2);
+  % Active arrow from only last frame
+  \draw[arrow] (last_mem.east) -- (reader2.west);
+
+  % Disabled arrows from old memories (optional - shows what's not used)
+  \draw[disabled_arrow] (old_mem1.east) -- (reader2.west);
+  \draw[disabled_arrow] (old_mem2.east) -- (reader2.west);
+  \draw[disabled_arrow] (old_mem3.east) -- (reader2.west);
+  \draw[disabled_arrow] (old_mem4.east) -- (reader2.west);
 
   % Current frame
   \node[memory, fill=yellow!30] (current2) at (6,-3) {Current\\Frame $t$};
-  \draw[arrow] (reader2) -- (current2);
+  \draw[arrow] (reader2.east) -- (current2.west);
 
   % Cross out old memories
   \foreach \i in {1,2,3,4} {
