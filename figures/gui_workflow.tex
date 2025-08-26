@@ -1,0 +1,44 @@
+\begin{tikzpicture}[
+    % Define styles
+    workflowstep/.style={rectangle, draw, thick, fill=blue!15, minimum width=2.8cm, minimum height=1.2cm, align=center, rounded corners=3pt},
+    interactive/.style={rectangle, draw, thick, fill=green!20, minimum width=2.8cm, minimum height=1.2cm, align=center, rounded corners=3pt},
+    data/.style={rectangle, draw, thick, fill=orange!15, rounded corners=5pt, minimum height=1cm, align=center},
+    arrow/.style={->, >=stealth, thick},
+    feedback/.style={<->, >=stealth, thick, red, dashed},
+    label/.style={font=\scriptsize\bfseries}
+  ]
+
+  % Step 1: Data Import
+  \node[workflowstep] (import) at (0,4) {\textbf{Frame Management}\\Import microscopy\\data \& videos};
+
+  % Step 2: Automatic Segmentation
+  \node[workflowstep, right=3.5cm of import] (segment) {\textbf{Segmentation}\\Automatic Cellpose-SAM\\processing};
+
+  % Step 3: Interactive Correction
+  \node[interactive, below=2cm of segment] (correct) {\textbf{Interactive Correction}\\SAM point-and-click\\refinement};
+
+  % Step 4: Temporal Tracking
+  \node[workflowstep, left=3.5cm of correct] (track) {\textbf{Temporal Tracking}\\Frame-by-frame\\cell tracking};
+
+  % Step 5: Analysis & Export
+  \node[workflowstep, below=2.2cm of track] (export) {\textbf{Analysis \& Export}\\Results visualization\\and data export};
+
+  % Data flow arrows
+  \draw[arrow] (import) -- node[above, label] {Multiple formats} (segment);
+  \draw[arrow] (segment) -- node[right, label] {Initial masks} (correct);
+  \draw[arrow] (correct) -- node[below, label] {Refined masks} (track);
+  \draw[arrow] (track) -- node[left, label] {Tracked cells} (export);
+
+  % Visual feedback indicators
+  \node[data, above=0.3cm of segment] (preview1) {Real-time preview};
+  \node[data, right=0.3cm of correct] (preview2) {Immediate\\visual feedback};
+
+  % User interaction annotations
+  \node[below=2cm of correct, align=left, font=\scriptsize] {
+    \textbf{User Interactions:}\\[0.15cm]
+    \hspace{0.5em}$\bullet$ Click: Add cell regions\\
+    \hspace{0.5em}$\bullet$ Ctrl+Click: Remove regions\\
+    \hspace{0.5em}$\bullet$ Drag: Define bounding box
+  };
+
+\end{tikzpicture}

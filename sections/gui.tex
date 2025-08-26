@@ -6,6 +6,13 @@
 
 To make CellSeek accessible to biologists without programming expertise, we developed a comprehensive PyQt6-based GUI that transforms complex computer vision algorithms into an intuitive workflow tool.
 
+\begin{figure}[htbp]
+  \centering
+  \input{figures/gui_workflow}
+  \caption{CellSeek GUI workflow overview. The interface guides users through a five-step process: (1) Frame Management for data import, (2) Automatic Segmentation using Cellpose-SAM, (3) Interactive Correction with SAM's point-and-click interface, (4) Temporal Tracking with visual feedback, and (5) Analysis and Export. Red dashed arrows indicate interactive feedback loops that allow users to review and correct results at any stage.}
+  \label{fig:gui_workflow}
+\end{figure}
+
 \subsection{Design and Architecture}
 
 The interface features a dark-themed design optimized for microscopy data analysis and employs a modular tab system: Frame Management, Segmentation, Tracking, Analysis, and Export. This workflow-oriented organization provides immediate visual feedback while preserving session state for resumable analyses.
