@@ -25,7 +25,7 @@ Cellpose-SAM represents a strategic surgical transplant of the Segment Anything 
 
 \begin{figure}[h!]
   \centering
-  \input{../figures/cellpose_sam_architecture_tikz}
+  \input{../figures/cellpose_sam_architecture}
   \caption{Cellpose-SAM architecture overview. The model combines SAM's pretrained ViT-L encoder (adapted from 1024×1024 to 256×256 resolution) with Cellpose's flow field output head. Unlike SAM's complex prompt-based decoder, this hybrid approach uses simple transposed convolutions to generate cell probability maps and flow fields, which are then processed through Cellpose's gradient tracking algorithm to produce instance masks.}
   \label{fig:cellpose_sam_arch}
 \end{figure}
@@ -84,7 +84,7 @@ The decoder architecture abandons SAM's complex prompt-based design in favor of 
 
 \begin{figure}[h!]
   \centering
-  \input{../figures/flow_field_visualization_tikz}
+  \input{../figures/flow_field_visualization}
   \caption{Cellpose flow field visualization. The flow field vectors (arrows) point from each pixel toward the nearest cell center, creating a gradient field that guides the mask reconstruction process. Cell probability maps (shown as heat intensity) highlight regions likely to contain cell centers, while the gradient tracking algorithm follows flow vectors to group pixels into coherent instance masks.}
   \label{fig:flow_field}
 \end{figure}
@@ -120,7 +120,7 @@ Unlike the original Cutie which maintains extensive temporal memory banks, our a
 
 \begin{figure}[h!]
   \centering
-  \input{../figures/memory_architecture_comparison_tikz}
+  \input{../figures/memory_architecture_comparison}
   \caption{Memory architecture comparison between original Cutie and CellSeek adaptation. Original Cutie maintains extensive long-term memory banks that accumulate features over many frames, while CellSeek's adaptation uses only last-frame memory to avoid confusion from morphologically similar cells and reduce computational overhead.}
   \label{fig:memory_comparison}
 \end{figure}
@@ -138,7 +138,7 @@ where $\mathbf{k}^{t-1}, \mathbf{v}^{t-1}$ represent key-value features from fra
 
 \begin{figure}[h!]
   \centering
-  \input{../figures/temporal_tracking_timeline_tikz}
+  \input{../figures/temporal_tracking_timeline}
   \caption{Temporal tracking timeline showing last-frame-only memory architecture. Unlike traditional approaches that accumulate memory over many frames, CellSeek's adapted Cutie maintains only the immediate previous frame memory ($\mathcal{M}_{t-1}$) for processing frame $t$. Object queries ($\mathbf{Q}_t$) are updated continuously while older memory states are discarded to prevent confusion from morphologically similar cells.}
   \label{fig:temporal_timeline}
 \end{figure}
