@@ -25,22 +25,22 @@
     }
 
   % Labels
-  \node[below] at (2,-0.3) {\textbf{Flow Field Representation}};
-  \node[right] at (4.2,1.5) {\scriptsize Vectors point to cell center};
+  % \node[below] at (2,-0.3) {\textbf{Flow Field Representation}};
+  % \node[right] at (4.2,1.5) {\scriptsize Vectors point to cell center};
   \node[below right] at (center) {\scriptsize Center};
 
   % Equations
-  \node[align=center] at (6,2) {
-    \textbf{Flow Equations:}\\[0.2cm]
-    $\vec{f}(x,y) = (dx, dy)$\\[0.1cm]
-    $dx = x_{center} - x$\\[0.1cm]
-    $dy = y_{center} - y$
+  \node[align=center] at (7.5,1.5) {
+    \textbf{Gradient Tracking:}\\[0.2cm]
+    Follow flow until convergence\\[0.15cm]
+    $\vec{p}_{t+1} = \vec{p}_t + \alpha \vec{f}(\vec{p}_t)$
   };
 
-  \node[align=center] at (6,0.5) {
-    \textbf{Gradient Tracking:}\\[0.2cm]
-    Follow flow until convergence\\
-    $\vec{p}_{t+1} = \vec{p}_t + \alpha \vec{f}(\vec{p}_t)$
+  \node[align=center] at (-3,1.5) {
+    \textbf{Flow Equations:}\\[0.2cm]
+    $\vec{f}(x,y) = (dx, dy)$\\[0.15cm]
+    $dx = x_{center} - x$\\[0.15cm]
+    $dy = y_{center} - y$
   };
 
 \end{tikzpicture}

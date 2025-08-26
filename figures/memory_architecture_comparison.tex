@@ -18,17 +18,17 @@
   \node[memory] (mem5) at (0,1.8) {Frame $t-1$};
 
   % Memory reader
-  \node[processor] (reader1) at (3,3.5) {Memory\\Reader};
+  \node[processor] (reader1) at (4,3.5) {Memory\\Reader};
 
   % Improved arrows from all memories - connecting to specific anchor points
-  \draw[arrow] (mem1.east) -- (reader1.west);
-  \draw[arrow] (mem2.east) -- (reader1.west);
-  \draw[arrow] (mem3.east) -- (reader1.west);
-  \draw[arrow] (mem4.east) -- (reader1.west);
-  \draw[arrow] (mem5.east) -- (reader1.west);
+  \draw[semithick] (mem1.east) -- (reader1.west);
+  \draw[semithick] (mem2.east) -- (reader1.west);
+  \draw[semithick] (mem3.east) -- (reader1.west);
+  \draw[semithick] (mem4.east) -- (reader1.west);
+  \draw[semithick] (mem5.east) -- (reader1.west);
 
   % Current frame
-  \node[memory, fill=yellow!30] (current1) at (6,3.5) {Current\\Frame $t$};
+  \node[memory, fill=yellow!30] (current1) at (7.5,3.5) {Current\\Frame $t$};
   \draw[arrow] (reader1.east) -- (current1.west);
 
   % Separator line
@@ -45,19 +45,19 @@
   \node[memory, fill=orange!30] (last_mem) at (0,-4.7) {Frame $t-1$};
 
   % Simplified memory reader
-  \node[processor, fill=orange!20] (reader2) at (3,-3) {Last-Frame\\Memory Reader};
+  \node[processor, fill=orange!20] (reader2) at (4.5,-3) {Last-Frame\\Memory Reader};
 
   % Active arrow from only last frame
-  \draw[arrow] (last_mem.east) -- (reader2.west);
+  \draw[semithick] (last_mem.east) -- (reader2.west);
 
   % Disabled arrows from old memories (optional - shows what's not used)
-  \draw[disabled_arrow] (old_mem1.east) -- (reader2.west);
-  \draw[disabled_arrow] (old_mem2.east) -- (reader2.west);
-  \draw[disabled_arrow] (old_mem3.east) -- (reader2.west);
-  \draw[disabled_arrow] (old_mem4.east) -- (reader2.west);
+  \draw[semithick, dashed, color=red!50] (old_mem1.east) -- (reader2.west);
+  \draw[semithick, dashed, color=red!50] (old_mem2.east) -- (reader2.west);
+  \draw[semithick, dashed, color=red!50] (old_mem3.east) -- (reader2.west);
+  \draw[semithick, dashed, color=red!50] (old_mem4.east) -- (reader2.west);
 
   % Current frame
-  \node[memory, fill=yellow!30] (current2) at (6,-3) {Current\\Frame $t$};
+  \node[memory, fill=yellow!30] (current2) at (8.5,-3) {Current\\Frame $t$};
   \draw[arrow] (reader2.east) -- (current2.west);
 
   % Cross out old memories
