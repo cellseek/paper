@@ -82,6 +82,13 @@ The decoder architecture abandons SAM's complex prompt-based design in favor of 
   \item \textbf{Vertical Flow (dy)}: Y-component of vector pointing from each pixel to its cell center
 \end{itemize}
 
+\begin{figure}[h!]
+  \centering
+  \input{../figures/flow_field_visualization_tikz}
+  \caption{Cellpose flow field visualization. The flow field vectors (arrows) point from each pixel toward the nearest cell center, creating a gradient field that guides the mask reconstruction process. Cell probability maps (shown as heat intensity) highlight regions likely to contain cell centers, while the gradient tracking algorithm follows flow vectors to group pixels into coherent instance masks.}
+  \label{fig:flow_field}
+\end{figure}
+
 The final instance masks are generated through Cellpose's gradient tracking algorithm, where flow vectors are followed until convergence at cell centers, with pixels converging to the same center grouped into instance masks.
 
 The model was extensively fine-tuned on aggregated biological datasets including Cellpose, TissueNet, Omnipose, DeepBacs, and MoNuSeg. This specialized training process adapts SAM's general architecture to the specific morphological characteristics of cellular structures while preserving its inherent generalization capabilities across diverse imaging conditions.
@@ -111,6 +118,13 @@ Unlike the original Cutie which maintains extensive temporal memory banks, our a
   \item \textbf{Reduced Error Accumulation}: Shorter memory prevents the propagation of segmentation errors over long temporal sequences
 \end{itemize}
 
+\begin{figure}[h!]
+  \centering
+  \input{../figures/memory_architecture_comparison_tikz}
+  \caption{Memory architecture comparison between original Cutie and CellSeek adaptation. Original Cutie maintains extensive long-term memory banks that accumulate features over many frames, while CellSeek's adaptation uses only last-frame memory to avoid confusion from morphologically similar cells and reduce computational overhead.}
+  \label{fig:memory_comparison}
+\end{figure}
+
 \subsubsection{Last-Frame Memory Representation}
 
 Our adapted Cutie maintains a simplified memory structure that focuses on immediate temporal context:
@@ -121,6 +135,13 @@ Our adapted Cutie maintains a simplified memory structure that focuses on immedi
 \end{align}
 
 where $\mathbf{k}^{t-1}, \mathbf{v}^{t-1}$ represent key-value features from frame $t-1$ only, and $\mathbf{q}_i^{obj}$ represents object queries for each tracked cell that are updated frame-by-frame without long-term accumulation.
+
+\begin{figure}[h!]
+  \centering
+  \input{../figures/temporal_tracking_timeline_tikz}
+  \caption{Temporal tracking timeline showing last-frame-only memory architecture. Unlike traditional approaches that accumulate memory over many frames, CellSeek's adapted Cutie maintains only the immediate previous frame memory ($\mathcal{M}_{t-1}$) for processing frame $t$. Object queries ($\mathbf{Q}_t$) are updated continuously while older memory states are discarded to prevent confusion from morphologically similar cells.}
+  \label{fig:temporal_timeline}
+\end{figure}
 
 \subsubsection{Tracking Algorithm}
 

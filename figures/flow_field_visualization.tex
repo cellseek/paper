@@ -1,9 +1,3 @@
-\documentclass[tikz,border=10pt]{standalone}
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows, positioning, fit, shadows}
-
-\begin{document}
-
 \begin{tikzpicture}[
     cell/.style={circle, draw, thick, fill=blue!30, minimum size=0.8cm},
     grid/.style={help lines, step=0.5cm, gray!50},
@@ -32,7 +26,7 @@
 
   % Labels
   \node[below] at (2,-0.3) {\textbf{Flow Field Representation}};
-  \node[right] at (4.2,1.5) {\scriptsize Vectors point\\to cell center};
+  \node[right] at (4.2,1.5) {\scriptsize Vectors point to cell center};
   \node[below right] at (center) {\scriptsize Center};
 
   % Equations
@@ -50,5 +44,3 @@
   };
 
 \end{tikzpicture}
-
-\end{document}
