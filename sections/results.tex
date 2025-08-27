@@ -9,7 +9,9 @@
 To quantify the usability advantage of CellSeek, we conducted a comparative workflow analysis examining the steps, decisions, and expertise required to achieve tracking results across different platforms. We analyzed three experimental scenarios representing common biological applications:
 
 \textbf{Scenario 1:} Fluorescent nuclei in HeLa cells (2D, 100 frames)
+
 \textbf{Scenario 2:} Phase-contrast fibroblasts with high cell density (2D, 200 frames)
+
 \textbf{Scenario 3:} Bacterial microcolonies in brightfield (2D, 150 frames)
 
 \subsubsection{TrackMate Workflow Complexity}
@@ -23,7 +25,6 @@ TrackMate analysis requires navigating a complex decision tree with numerous par
   \item \textbf{Tracker Configuration}: Choose tracking algorithm (LAP, simple, manual) and configure linking parameters
   \item \textbf{Linking Optimization}: Adjust linking max distance, gap-closing parameters, splitting/merging costs
   \item \textbf{Post-processing}: Apply track filters, validate results, and potentially iterate through previous steps
-  \item \textbf{Export Configuration}: Set up appropriate export formats and data organization
 \end{enumerate}
 
 This workflow requires deep understanding of computer vision concepts, familiarity with cellular morphology, and experience with parameter optimization strategies. Users must make dozens of interdependent decisions with limited guidance, often requiring multiple iterations to achieve acceptable results.
@@ -39,7 +40,6 @@ In contrast, CellSeek dramatically simplifies the tracking workflow:
   \item \textbf{Tracking Initiation}: Single click to start automated tracking
   \item \textbf{Progress Monitoring}: Watch side-by-side comparison as tracking proceeds
   \item \textbf{Selective Intervention}: Intervene at any frame to correct errors using SAM tools
-  \item \textbf{Export}: One-click export of results in multiple formats
 \end{enumerate}
 
 The CellSeek workflow eliminates the need for parameter optimization, reduces the decision burden by over 90\%, and provides intuitive visual feedback throughout the process. The integration of SAM's interactive segmentation capabilities allows users to correct errors with natural point-and-click interactions rather than complex parameter adjustments.
@@ -125,7 +125,7 @@ To validate our "generalization" claim, we tested CellSeek across diverse imagin
 CellSeek exhibits predictable failure modes that align with fundamental limitations of the underlying foundation models:
 
 \begin{itemize}
-  \item \textbf{Extreme Cell Density:} When cells are too densely packed for SAM to distinguish boundaries (>80\% confluence)
+  \item \textbf{Extreme Cell Density:} When cells are too densely packed for SAM to distinguish boundaries
   \item \textbf{Low Signal-to-Noise:} Very dim or noisy images that challenge even foundation model robustness
   \item \textbf{Rapid Morphological Changes:} Cells undergoing dramatic shape changes that exceed the adapted Cutie's last-frame temporal consistency assumptions
   \item \textbf{Complex Division Events:} Multi-daughter divisions or asymmetric divisions that violate tracking assumptions

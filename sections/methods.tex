@@ -6,7 +6,7 @@
 
 \subsection{System Architecture}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
   \input{../figures/system_architecture}
   \caption{The CellSeek system architecture. The pipeline processes microscopy videos through two main stages: (1) the Cellpose-SAM module performs automatic instance segmentation on each frame, and (2) the adapted Cutie tracker maintains cell identities across time using only last-frame memory ($\mathcal{M}_{t-1}$) and object queries ($\mathbf{Q}_{t-1}$), which are updated each frame. This design eliminates complex parameter tuning while maintaining robust tracking performance.}
@@ -23,7 +23,7 @@ The pipeline takes a microscopy video $V = \{I_1, I_2, \ldots, I_T\}$ where $I_t
 
 Cellpose-SAM represents a strategic surgical transplant of the Segment Anything Model (SAM) for biological instance segmentation. Rather than adapting SAM's prompt-based architecture, Cellpose-SAM takes a fundamentally different approach: it discards SAM's entire decoder and retains only the powerful pretrained image encoder, replacing the complex prompt-based decoder with a simple Cellpose-style output head.
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
   \input{../figures/cellpose_sam_architecture}
   \caption{Cellpose-SAM architecture overview. The model combines SAM's pretrained ViT-L encoder (adapted from 1024×1024 to 256×256 resolution) with Cellpose's flow field output head. Unlike SAM's complex prompt-based decoder, this hybrid approach uses simple transposed convolutions to generate cell probability maps and flow fields, which are then processed through Cellpose's gradient tracking algorithm to produce instance masks.}
@@ -82,7 +82,7 @@ The decoder architecture abandons SAM's complex prompt-based design in favor of 
   \item \textbf{Vertical Flow (dy)}: Y-component of vector pointing from each pixel to its cell center
 \end{itemize}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
   \input{../figures/flow_field_visualization}
   \caption{Cellpose flow field visualization. The flow field vectors (arrows) point from each pixel toward the nearest cell center, creating a gradient field that guides the mask reconstruction process. Cell probability maps (shown as heat intensity) highlight regions likely to contain cell centers, while the gradient tracking algorithm follows flow vectors to group pixels into coherent instance masks.}
@@ -118,7 +118,7 @@ Unlike the original Cutie which maintains extensive temporal memory banks, our a
   \item \textbf{Reduced Error Accumulation}: Shorter memory prevents the propagation of segmentation errors over long temporal sequences
 \end{itemize}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
   \input{../figures/memory_architecture_comparison}
   \caption{Memory architecture comparison between original Cutie and CellSeek adaptation. Original Cutie maintains extensive long-term memory banks that accumulate features over many frames, while CellSeek's adaptation uses only last-frame memory to avoid confusion from morphologically similar cells and reduce computational overhead.}
@@ -136,7 +136,7 @@ Our adapted Cutie maintains a simplified memory structure that focuses on immedi
 
 where $\mathbf{k}^{t-1}, \mathbf{v}^{t-1}$ represent key-value features from frame $t-1$ only, and $\mathbf{q}_i^{obj}$ represents object queries for each tracked cell that are updated frame-by-frame without long-term accumulation.
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
   \input{../figures/temporal_tracking_timeline}
   \caption{Temporal tracking timeline showing last-frame-only memory architecture. Unlike traditional approaches that accumulate memory over many frames, CellSeek's adapted Cutie maintains only the immediate previous frame memory ($\mathcal{M}_{t-1}$) for processing frame $t$. Object queries ($\mathbf{Q}_t$) are updated continuously while older memory states are discarded to prevent confusion from morphologically similar cells.}
