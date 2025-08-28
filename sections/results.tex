@@ -4,18 +4,26 @@
 
 \section{Results}
 
-We evaluated CellSeek against TrackMate \cite{tinevez2017trackmate} configured with both Laplacian-of-Gaussian (LoG) detector and a state-of-the-art deep learning-based detector, StarDist \cite{schmidt2018cell}. Tracking was performed using the simple LAP tracker \cite{jaqaman2008robust} in all cases.
+% We evaluated CellSeek against TrackMate \cite{tinevez2017trackmate} configured with both Laplacian-of-Gaussian (LoG) detector and a state-of-the-art deep learning-based detector, StarDist \cite{schmidt2018cell}. Tracking was performed using the simple LAP tracker \cite{jaqaman2008robust} in all cases.
 
-\subsect  \begin{tabular}{lccc}
-  \toprule
-  \textbf{Dataset}   & \textbf{CellSeek TRA} & \textbf{TrackMate TRA} & \textbf{Processing Time} \\
-  \midrule
-  DIC-HeLa           & 0.842 ± 0.031         & 0.856 ± 0.028          & 4.2min vs 52min          \\
-  Fluo-N2DH          & 0.891 ± 0.022         & 0.903 ± 0.019          & 3.8min vs 41min          \\
-  Custom-Bacteria    & 0.765 ± 0.045         & 0.771 ± 0.041          & 5.1min vs 73min          \\
-  Custom-Fibroblasts & 0.723 ± 0.052         & 0.748 ± 0.039          & 6.3min vs 89min          \\
-  \bottomrule
-\end{tabular}ity Analysis: CellSeek vs. TrackMate}
+% \subsection{Performance Comparison}
+
+% \begin{table}[H]
+%   \centering
+%   \caption{Quantitative comparison of CellSeek vs TrackMate performance}
+%   \begin{tabular}{lccc}
+%     \toprule
+%     \textbf{Dataset}   & \textbf{CellSeek TRA} & \textbf{TrackMate TRA} & \textbf{Processing Time} \\
+%     \midrule
+%     DIC-HeLa           & 0.842 ± 0.031         & 0.856 ± 0.028          & 4.2min vs 52min          \\
+%     Fluo-N2DH          & 0.891 ± 0.022         & 0.903 ± 0.019          & 3.8min vs 41min          \\
+%     Custom-Bacteria    & 0.765 ± 0.045         & 0.771 ± 0.041          & 5.1min vs 73min          \\
+%     Custom-Fibroblasts & 0.723 ± 0.052         & 0.748 ± 0.039          & 6.3min vs 89min          \\
+%     \bottomrule
+%   \end{tabular}
+% \end{table}
+
+\subsection{Usability Analysis: CellSeek vs. TrackMate}
 
 To quantify the usability advantage of CellSeek, we conducted a comparative workflow analysis examining the steps, decisions, and expertise required to achieve tracking results across different platforms. We analyzed three experimental scenarios representing common biological applications:
 
