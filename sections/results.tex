@@ -4,16 +4,18 @@
 
 \section{Results}
 
+We evaluated CellSeek against TrackMate \cite{tinevez2017trackmate} configured with both Laplacian-of-Gaussian (LoG) detector and a state-of-the-art deep learning-based detector, StarDist \cite{schmidt2018cell}. Tracking was performed using the simple LAP tracker \cite{jaqaman2008robust} in all cases.
+
 \subsect  \begin{tabular}{lccc}
-    \toprule
-    \textbf{Dataset}   & \textbf{CellSeek TRA} & \textbf{TrackMate TRA} & \textbf{Processing Time} \\
-    \midrule
-    DIC-HeLa           & 0.842 ± 0.031         & 0.856 ± 0.028          & 4.2min vs 52min          \\
-    Fluo-N2DH          & 0.891 ± 0.022         & 0.903 ± 0.019          & 3.8min vs 41min          \\
-    Custom-Bacteria    & 0.765 ± 0.045         & 0.771 ± 0.041          & 5.1min vs 73min          \\
-    Custom-Fibroblasts & 0.723 ± 0.052         & 0.748 ± 0.039          & 6.3min vs 89min          \\
-    \bottomrule
-  \end{tabular}ity Analysis: CellSeek vs. TrackMate}
+  \toprule
+  \textbf{Dataset}   & \textbf{CellSeek TRA} & \textbf{TrackMate TRA} & \textbf{Processing Time} \\
+  \midrule
+  DIC-HeLa           & 0.842 ± 0.031         & 0.856 ± 0.028          & 4.2min vs 52min          \\
+  Fluo-N2DH          & 0.891 ± 0.022         & 0.903 ± 0.019          & 3.8min vs 41min          \\
+  Custom-Bacteria    & 0.765 ± 0.045         & 0.771 ± 0.041          & 5.1min vs 73min          \\
+  Custom-Fibroblasts & 0.723 ± 0.052         & 0.748 ± 0.039          & 6.3min vs 89min          \\
+  \bottomrule
+\end{tabular}ity Analysis: CellSeek vs. TrackMate}
 
 To quantify the usability advantage of CellSeek, we conducted a comparative workflow analysis examining the steps, decisions, and expertise required to achieve tracking results across different platforms. We analyzed three experimental scenarios representing common biological applications:
 
@@ -28,10 +30,10 @@ To quantify the usability advantage of CellSeek, we conducted a comparative work
 TrackMate analysis requires navigating a complex decision tree with numerous parameter optimization steps:
 
 \begin{enumerate}
-  \item \textbf{Detector Selection}: Choose between LoG, DoG, StarDist, or Cellpose detectors, each with different strengths and parameter requirements
+  \item \textbf{Detector Selection}: Choose between LoG, DoG, StarDist \cite{schmidt2018cell}, or Cellpose \cite{stringer2021cellpose} detectors, each with different strengths and parameter requirements
   \item \textbf{Detection Parameter Tuning}: Optimize spot diameter, threshold values, quality filters, and preprocessing options
   \item \textbf{Feature Calculation}: Select appropriate features for tracking (intensity, morphology, texture)
-  \item \textbf{Tracker Configuration}: Choose tracking algorithm (LAP, simple, manual) and configure linking parameters
+  \item \textbf{Tracker Configuration}: Choose tracking algorithm (LAP \cite{jaqaman2008robust}, simple, manual) and configure linking parameters
   \item \textbf{Linking Optimization}: Adjust linking max distance, gap-closing parameters, splitting/merging costs
   \item \textbf{Post-processing}: Apply track filters, validate results, and potentially iterate through previous steps
 \end{enumerate}
@@ -74,46 +76,6 @@ The expertise requirements for both platforms reveal stark differences:
 \end{table}
 
 CellSeek reduces the expertise barrier by providing guided workflows, visual feedback, and intuitive correction tools that require only basic biological knowledge rather than specialized computational skills.
-
-\subsection{Quantitative Performance Benchmarking}
-
-We evaluated CellSeek performance against established baselines using datasets from the Cell Tracking Challenge (CTC) and custom microscopy data representing diverse imaging modalities and cellular behaviors.
-
-\subsubsection{Datasets and Evaluation Metrics}
-
-Our evaluation encompasses benchmark datasets from the Cell Tracking Challenge (CTC) and custom microscopy data:
-\begin{itemize}
-  \item \textbf{CTC datasets}: Phase-contrast HeLa cells and fluorescent mouse stem cells with division events
-  \item \textbf{Custom datasets}: Bacterial growth in microfluidic chambers and dense fibroblast cultures
-\end{itemize}
-
-We report standard CTC metrics:
-\begin{itemize}
-  \item \textbf{TRA (Tracking Accuracy)}: Overall tracking performance combining detection and linking
-  \item \textbf{DET (Detection Performance)}: Segmentation quality and completeness
-  \item \textbf{SEG (Segmentation Accuracy)}: Pixel-level segmentation precision
-\end{itemize}
-
-\subsubsection{Comparative Results}
-
-CellSeek achieved performance comparable to optimally-configured TrackMate across all test scenarios:
-
-\begin{table}[H]
-  \centering
-  \caption{Performance comparison across benchmark datasets}
-  \begin{tabular}{lccc}
-    \toprule
-    \textbf{Dataset}   & \textbf{CellSeek TRA} & \textbf{TrackMate TRA} & \textbf{Processing Time} \\
-    \midrule
-    CTC-DIC-HeLa       & 0.842 ± 0.031         & 0.856 ± 0.028          & 4.2min vs 52min          \\
-    CTC-Fluo-N2DH      & 0.891 ± 0.022         & 0.903 ± 0.019          & 3.8min vs 41min          \\
-    Custom-Bacteria    & 0.765 ± 0.045         & 0.771 ± 0.041          & 5.1min vs 73min          \\
-    Custom-Fibroblasts & 0.723 ± 0.052         & 0.748 ± 0.039          & 6.3min vs 89min          \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-Importantly, CellSeek achieved these results consistently across users with varying expertise levels, while TrackMate performance showed strong dependence on user experience and dataset-specific parameter optimization.
 
 \subsection{Model Generalizability Across Diverse Microscopy Techniques}
 

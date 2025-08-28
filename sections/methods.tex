@@ -21,7 +21,7 @@ The pipeline takes a microscopy video $V = \{I_1, I_2, \ldots, I_T\}$ where $I_t
 
 \subsubsection{Architecture Overview}
 
-Cellpose-SAM represents a strategic surgical transplant of the Segment Anything Model (SAM) for biological instance segmentation. Rather than adapting SAM's prompt-based architecture, Cellpose-SAM takes a fundamentally different approach: it discards SAM's entire decoder and retains only the powerful pretrained image encoder, replacing the complex prompt-based decoder with a simple Cellpose-style output head.
+Cellpose-SAM represents a strategic surgical transplant of the Segment Anything Model (SAM) \cite{kirillov2023segment} for biological instance segmentation. Rather than adapting SAM's prompt-based architecture, Cellpose-SAM takes a fundamentally different approach: it discards SAM's entire decoder and retains only the powerful pretrained image encoder, replacing the complex prompt-based decoder with a simple Cellpose-style \cite{stringer2021cellpose} output head.
 
 \begin{figure}[H]
   \centering
@@ -91,13 +91,13 @@ The decoder architecture abandons SAM's complex prompt-based design in favor of 
 
 The final instance masks are generated through Cellpose's gradient tracking algorithm, where flow vectors are followed until convergence at cell centers, with pixels converging to the same center grouped into instance masks.
 
-The model was extensively fine-tuned on aggregated biological datasets including Cellpose, TissueNet, Omnipose, DeepBacs, and MoNuSeg. This specialized training process adapts SAM's general architecture to the specific morphological characteristics of cellular structures while preserving its inherent generalization capabilities across diverse imaging conditions.
+The model was extensively fine-tuned on aggregated biological datasets including Cellpose \cite{stringer2021cellpose}, TissueNet \cite{gjorevski2022tissue}, Omnipose \cite{cutler2022omnipose}, DeepBacs \cite{spahn2022deepbacs}, and MoNuSeg \cite{kumar2017dataset}. This specialized training process adapts SAM's general architecture to the specific morphological characteristics of cellular structures while preserving its inherent generalization capabilities across diverse imaging conditions.
 
 \subsection{Temporal Tracking with Cutie}
 
 \subsubsection{CellSeek Cutie Adaptation}
 
-The temporal tracking component utilizes an adapted version of Cutie, a video object segmentation network that employs object-level memory reading to maintain consistent object identities across frames. For CellSeek, we have made a crucial adaptation to the original Cutie architecture by removing long-term memory and focusing exclusively on last-frame memory. This modification is specifically motivated by the characteristics of cellular imaging: cells within the same population exhibit highly similar morphological features, making long-term appearance memory redundant and potentially counterproductive.
+The temporal tracking component utilizes an adapted version of Cutie \cite{cheng2024putting}, a video object segmentation network that employs object-level memory reading to maintain consistent object identities across frames. For CellSeek, we have made a crucial adaptation to the original Cutie architecture by removing long-term memory and focusing exclusively on last-frame memory. This modification is specifically motivated by the characteristics of cellular imaging: cells within the same population exhibit highly similar morphological features, making long-term appearance memory redundant and potentially counterproductive.
 
 Our adapted Cutie architecture addresses the unique challenges of cell tracking by leveraging the fact that cellular identity is better maintained through spatial proximity and immediate temporal context rather than accumulated appearance history. The simplified architecture consists of three core components:
 

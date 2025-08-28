@@ -8,7 +8,7 @@
 
 CellSeek represents a fundamental shift in bioimage analysis philosophy: from parameter-heavy, expert-requiring tools toward foundation model-powered systems that work effectively out-of-the-box. This transition mirrors broader trends in machine learning, where pre-trained models increasingly replace task-specific architectures that require extensive domain expertise to configure and optimize.
 
-Our results demonstrate that this paradigm shift can be achieved without sacrificing analytical rigor. By achieving comparable accuracy to expert-tuned TrackMate configurations while reducing analysis time by over 10-fold and eliminating the expertise barrier, CellSeek validates the "democratization through foundation models" hypothesis that has transformed other fields.
+Our results demonstrate that this paradigm shift can be achieved without sacrificing analytical rigor. By achieving comparable accuracy to expert-tuned TrackMate \cite{tinevez2017trackmate} configurations while reducing analysis time by over 10-fold and eliminating the expertise barrier, CellSeek validates the "democratization through foundation models" hypothesis that has transformed other fields.
 
 \subsection{Addressing the Complexity-Performance Trade-off}
 
@@ -44,9 +44,9 @@ The usability improvements demonstrated by CellSeek have implications beyond tra
 
 \subsection{Comparison with Contemporary Approaches}
 
-While TrackMate remains the dominant platform for cell tracking, several contemporary approaches attempt to address similar usability challenges. DeepCell provides pre-trained models for specific cell types but lacks the generalization capabilities of foundation models. CellProfiler offers pipeline-based analysis but still requires significant parameter optimization. Recent deep learning tools like DiffusionTrack show promise but typically require training on specific datasets.
+While TrackMate \cite{tinevez2017trackmate} remains the dominant platform for cell tracking, several contemporary approaches attempt to address similar usability challenges. DeepCell provides pre-trained models for specific cell types but lacks the generalization capabilities of foundation models. CellProfiler offers pipeline-based analysis but still requires significant parameter optimization. Recent deep learning tools like DiffusionTrack show promise but typically require training on specific datasets.
 
-CellSeek's foundation model approach offers unique advantages: broad generalization without training, robust performance across modalities, and minimal parameter requirements. The integration of Cellpose-SAM provides proven segmentation capabilities derived from the established Cellpose framework, while our adapted Cutie's simplified object-level tracking specifically optimized for cell populations represents a significant advance over previous video object segmentation methods for cellular applications. However, it trades the ultimate flexibility of tools like TrackMate for simplified operation, a trade-off we argue benefits the majority of users.
+CellSeek's foundation model approach offers unique advantages: broad generalization without training, robust performance across modalities, and minimal parameter requirements. The integration of Cellpose-SAM provides proven segmentation capabilities derived from the established Cellpose framework, while our adapted Cutie's simplified object-level tracking specifically optimized for cell populations represents a significant advance over previous video object segmentation methods for cellular applications. However, it trades the ultimate flexibility of tools like TrackMate \cite{tinevez2017trackmate} for simplified operation, a trade-off we argue benefits the majority of users.
 
 \subsection{Future Directions and Limitations}
 
