@@ -4,7 +4,16 @@
 
 \section{Results}
 
-\subsection{Usability Analysis: CellSeek vs. TrackMate}
+\subsect  \begin{tabular}{lccc}
+    \toprule
+    \textbf{Dataset}   & \textbf{CellSeek TRA} & \textbf{TrackMate TRA} & \textbf{Processing Time} \\
+    \midrule
+    DIC-HeLa           & 0.842 ± 0.031         & 0.856 ± 0.028          & 4.2min vs 52min          \\
+    Fluo-N2DH          & 0.891 ± 0.022         & 0.903 ± 0.019          & 3.8min vs 41min          \\
+    Custom-Bacteria    & 0.765 ± 0.045         & 0.771 ± 0.041          & 5.1min vs 73min          \\
+    Custom-Fibroblasts & 0.723 ± 0.052         & 0.748 ± 0.039          & 6.3min vs 89min          \\
+    \bottomrule
+  \end{tabular}ity Analysis: CellSeek vs. TrackMate}
 
 To quantify the usability advantage of CellSeek, we conducted a comparative workflow analysis examining the steps, decisions, and expertise required to achieve tracking results across different platforms. We analyzed three experimental scenarios representing common biological applications:
 
@@ -72,12 +81,10 @@ We evaluated CellSeek performance against established baselines using datasets f
 
 \subsubsection{Datasets and Evaluation Metrics}
 
-Our evaluation encompasses four benchmark datasets:
+Our evaluation encompasses benchmark datasets from the Cell Tracking Challenge (CTC) and custom microscopy data:
 \begin{itemize}
-  \item \textbf{CTC-DIC-HeLa}: Phase-contrast HeLa cells with division events
-  \item \textbf{CTC-Fluo-N2DH-GOWT1}: Fluorescent mouse stem cells
-  \item \textbf{Custom-Brightfield-Bacteria}: Bacterial growth in microfluidic chambers
-  \item \textbf{Custom-PhaseContrast-Fibroblasts}: Dense fibroblast cultures
+  \item \textbf{CTC datasets}: Phase-contrast HeLa cells and fluorescent mouse stem cells with division events
+  \item \textbf{Custom datasets}: Bacterial growth in microfluidic chambers and dense fibroblast cultures
 \end{itemize}
 
 We report standard CTC metrics:
@@ -154,21 +161,21 @@ To demonstrate the broad applicability of CellSeek, we evaluated the system acro
   \begin{subfigure}{0.23\textwidth}
     \centering
     \includegraphics[width=\textwidth,height=3cm]{images/examples/hsc_segmented.jpg}
-    \caption{\footnotesize CTC BF HSC}
+    \caption{\footnotesize BF HSC}
     \label{fig:hsc}
   \end{subfigure}
   \hfill
   \begin{subfigure}{0.23\textwidth}
     \centering
     \includegraphics[width=\textwidth,height=3cm]{images/examples/hela_segmented.jpg}
-    \caption{\footnotesize CTC DIC HeLa}
+    \caption{\footnotesize DIC HeLa}
     \label{fig:hela}
   \end{subfigure}
   \hfill
   \begin{subfigure}{0.23\textwidth}
     \centering
     \includegraphics[width=\textwidth,height=3cm]{images/examples/huh7_segmented.jpg}
-    \caption{\footnotesize CTC Fluo Huh7}
+    \caption{\footnotesize Fluo Huh7}
     \label{fig:huh7}
   \end{subfigure}
 
@@ -177,32 +184,32 @@ To demonstrate the broad applicability of CellSeek, we evaluated the system acro
   \begin{subfigure}{0.23\textwidth}
     \centering
     \includegraphics[width=\textwidth,height=3cm]{images/examples/msc_segmented.jpg}
-    \caption{\footnotesize CTC Fluo MSC}
+    \caption{\footnotesize Fluo MSC}
     \label{fig:msc}
   \end{subfigure}
   \hfill
   \begin{subfigure}{0.23\textwidth}
     \centering
     \includegraphics[width=\textwidth,height=3cm]{images/examples/gowt1_segmented.jpg}
-    \caption{\footnotesize CTC Fluo GOWT1}
+    \caption{\footnotesize Fluo GOWT1}
     \label{fig:gowt1}
   \end{subfigure}
   \hfill
   \begin{subfigure}{0.23\textwidth}
     \centering
     \includegraphics[width=\textwidth,height=3cm]{images/examples/u373_segmented.jpg}
-    \caption{\footnotesize CTC PhC U373}
+    \caption{\footnotesize PhC U373}
     \label{fig:u373}
   \end{subfigure}
   \hfill
   \begin{subfigure}{0.23\textwidth}
     \centering
     \includegraphics[width=\textwidth,height=3cm]{images/examples/psc_segmented.jpg}
-    \caption{\footnotesize CTC PhC PSC}
+    \caption{\footnotesize PhC PSC}
     \label{fig:psc}
   \end{subfigure}
 
-  \caption{CellSeek segmentation results across diverse microscopy techniques and cell types. Microscopy images are shown with automated segmentation overlays demonstrating successful cell boundary detection across (top row) custom brightfield microscopy datasets including fibroblasts, 293T cells, MDA-MB-231 breast cancer cells, and COS-7 cells; (middle row) mixed imaging modalities including brightfield myosin imaging, Cell Tracking Challenge (CTC) brightfield hematopoietic stem cells (HSC), differential interference contrast (DIC) HeLa cells, and fluorescent Huh7 hepatocytes; (bottom row) CTC fluorescent mesenchymal stem cells (MSC), GOWT1 mouse embryonic stem cells, and phase contrast U373 glioblastoma and pancreatic stellate cells (PSC). The segmentation overlays demonstrate accurate cell boundary detection without parameter modifications or model retraining across these diverse imaging conditions.}
+  \caption{CellSeek segmentation results across diverse microscopy techniques and cell types. Microscopy images are shown with segmentation overlays demonstrating successful cell boundary detection across (top row) custom brightfield microscopy datasets including fibroblasts, 293T cells, MDA-MB-231 breast cancer cells, and COS-7 cells; (middle row) mixed imaging modalities including brightfield myosin imaging, brightfield hematopoietic stem cells (HSC), differential interference contrast (DIC) HeLa cells, and fluorescent Huh7 hepatocytes; (bottom row) fluorescent mesenchymal stem cells (MSC), GOWT1 mouse embryonic stem cells, and phase contrast U373 glioblastoma and pancreatic stellate cells (PSC). Examples include datasets from the Cell Tracking Challenge. The segmentation overlays demonstrate accurate cell boundary detection without parameter modifications or model retraining across these diverse imaging conditions.}
   \label{fig:generalization_examples}
 \end{figure}
 
