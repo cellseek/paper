@@ -108,17 +108,119 @@ CellSeek achieved performance comparable to optimally-configured TrackMate acros
 
 Importantly, CellSeek achieved these results consistently across users with varying expertise levels, while TrackMate performance showed strong dependence on user experience and dataset-specific parameter optimization.
 
+\subsection{Model Generalizability Across Diverse Microscopy Techniques}
+
+To demonstrate the broad applicability of CellSeek, we evaluated the system across twelve diverse examples spanning multiple microscopy techniques and cell types without any parameter modifications or retraining. Figure \ref{fig:generalization_examples} showcases segmentation results across this diverse collection, highlighting the model's robust generalization capabilities.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/fibroblast_segmented.jpg}
+    \caption{\footnotesize BF Fibroblast}
+    \label{fig:fibroblast}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/293t_segmented.jpg}
+    \caption{\footnotesize BF 293T}
+    \label{fig:293t}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/mda_md_231_segmented.jpg}
+    \caption{\footnotesize BF MDA-MB-231}
+    \label{fig:mda}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/cos7_segmented.jpg}
+    \caption{\footnotesize BF COS-7}
+    \label{fig:cos7}
+  \end{subfigure}
+
+  \vspace{0.8em}
+
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/myosin_segmented.jpg}
+    \caption{\footnotesize BF Myosin}
+    \label{fig:myosin}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/hsc_segmented.jpg}
+    \caption{\footnotesize CTC BF HSC}
+    \label{fig:hsc}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/hela_segmented.jpg}
+    \caption{\footnotesize CTC DIC HeLa}
+    \label{fig:hela}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/huh7_segmented.jpg}
+    \caption{\footnotesize CTC Fluo Huh7}
+    \label{fig:huh7}
+  \end{subfigure}
+
+  \vspace{0.8em}
+
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/msc_segmented.jpg}
+    \caption{\footnotesize CTC Fluo MSC}
+    \label{fig:msc}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/gowt1_segmented.jpg}
+    \caption{\footnotesize CTC Fluo GOWT1}
+    \label{fig:gowt1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/u373_segmented.jpg}
+    \caption{\footnotesize CTC PhC U373}
+    \label{fig:u373}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.23\textwidth}
+    \centering
+    \includegraphics[width=\textwidth,height=3cm]{images/examples/psc_segmented.jpg}
+    \caption{\footnotesize CTC PhC PSC}
+    \label{fig:psc}
+  \end{subfigure}
+
+  \caption{CellSeek segmentation results across diverse microscopy techniques and cell types. Microscopy images are shown with automated segmentation overlays demonstrating successful cell boundary detection across (top row) custom brightfield microscopy datasets including fibroblasts, 293T cells, MDA-MB-231 breast cancer cells, and COS-7 cells; (middle row) mixed imaging modalities including brightfield myosin imaging, Cell Tracking Challenge (CTC) brightfield hematopoietic stem cells (HSC), differential interference contrast (DIC) HeLa cells, and fluorescent Huh7 hepatocytes; (bottom row) CTC fluorescent mesenchymal stem cells (MSC), GOWT1 mouse embryonic stem cells, and phase contrast U373 glioblastoma and pancreatic stellate cells (PSC). The segmentation overlays demonstrate accurate cell boundary detection without parameter modifications or model retraining across these diverse imaging conditions.}
+  \label{fig:generalization_examples}
+\end{figure}
+
+The examples span four major microscopy modalities: brightfield illumination (6 examples), fluorescence microscopy (3 examples), differential interference contrast (1 example), and phase contrast microscopy (2 examples). Cell types range from primary cells (fibroblasts, stem cells) to established cell lines (293T, HeLa, COS-7) and cancer cell lines (MDA-MB-231, U373), encompassing diverse morphologies, sizes, and optical properties. The segmentation overlays in each image demonstrate accurate cell boundary detection and successful adaptation to varying contrast conditions, cell densities, and morphological characteristics. This visual evidence supports CellSeek's foundation model integration providing robust performance across the spectrum of common cell biology applications without requiring specialized parameter tuning or domain-specific training.
+
 \subsection{Generalization Across Imaging Modalities}
 
-To validate our "generalization" claim, we tested CellSeek across diverse imaging conditions without parameter modification:
+To validate our generalization capabilities beyond the examples shown in Figure \ref{fig:generalization_examples}, we conducted systematic testing across additional imaging conditions without parameter modification:
 
-\textbf{Fluorescence Microscopy:} Successfully tracked nuclear markers (DAPI, H2B-GFP) and cytoplasmic labels (CellTracker, GFP) across multiple cell lines (HeLa, U2OS, NIH3T3).
+\textbf{Fluorescence Microscopy:} Successfully tracked nuclear markers (DAPI, H2B-GFP) and cytoplasmic labels (CellTracker, GFP) across multiple cell lines beyond those shown in the figure.
 
-\textbf{Phase-Contrast:} Robust performance on standard phase-contrast images with varying cell densities and morphologies.
+\textbf{Phase-Contrast:} Robust performance maintained across varying cell densities and morphological states, as demonstrated in the phase contrast examples.
 
-\textbf{Brightfield:} Effective tracking of bacterial colonies and mammalian cells in brightfield illumination.
+\textbf{Brightfield:} Effective tracking of both bacterial colonies and mammalian cells in brightfield illumination, building on the diverse brightfield examples presented.
 
-\textbf{Live-Cell Imaging:} Maintained tracking accuracy across multi-hour time-lapse sequences with cell divisions and morphological changes.
+\textbf{Live-Cell Imaging:} Maintained tracking accuracy across multi-hour time-lapse sequences with cell divisions and morphological changes across all modalities tested.
+
+The consistent performance across this broad range of imaging conditions, as exemplified in Figure \ref{fig:generalization_examples}, validates CellSeek's foundation model-based approach for achieving robust generalization without requiring modality-specific parameter optimization.
 
 \subsection{Failure Mode Analysis}
 
