@@ -110,4 +110,24 @@ The interface is designed for extended analysis sessions with features that enha
 
 The frame-by-frame approach, while requiring more user involvement than fully automated methods, provides researchers with complete confidence in their tracking results and enables analysis of challenging datasets where automatic methods might fail.
 
+\subsection{Data Export and Analysis Interface}
+
+Once cell tracking is complete, CellSeek provides a comprehensive export interface that enables researchers to extract their tracking data in multiple formats for downstream analysis. The export functionality is accessible through a dedicated interface that provides:
+
+\textbf{Export Configuration:}
+\begin{itemize}
+  \item \textbf{Frame Range Selection}: Users can export data for the entire sequence or specify custom frame ranges for focused analysis
+  \item \textbf{Time Parameter Settings}: Configurable time intervals between frames allow for accurate temporal scaling of the exported data
+  \item \textbf{Multiple Format Support}: Simultaneous export to CSV (for statistical analysis), JSON (for programmatic access), annotated videos (for visualization), and individual annotated frames (for publication)
+\end{itemize}
+
+\textbf{Data Preview and Validation:}
+\begin{itemize}
+  \item \textbf{Real-time Preview}: Users can preview extracted morphological parameters for any frame before export
+  \item \textbf{Summary Statistics}: Automatic calculation and display of population statistics including cell count, morphological distributions, and temporal coverage
+  \item \textbf{Quality Assessment}: Visual and numerical indicators help users validate the completeness and quality of their tracking data
+\end{itemize}
+
+This export interface ensures that the high-quality tracking data generated through the supervised workflow can be seamlessly transferred to downstream analysis pipelines, completing the end-to-end user experience from data import to final analysis-ready output.
+
 \end{document}

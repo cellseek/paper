@@ -162,4 +162,68 @@ The adapted Cutie tracking process operates with last-frame memory only:
   \end{algorithmic}
 \end{algorithm}
 
+\subsection{Data Export and Morphological Analysis}
+
+CellSeek incorporates comprehensive data export and analysis capabilities designed to facilitate quantitative cell biology research. The system automatically extracts morphological parameters from tracked cell masks and provides multiple export formats for downstream analysis and visualization.
+
+\subsubsection{Morphological Parameter Extraction}
+
+For each tracked cell instance, CellSeek calculates a comprehensive set of morphological parameters from the segmentation masks. These parameters are computed from cell contours extracted using OpenCV's contour detection algorithms applied to binary masks for individual cell IDs.
+
+\textbf{Geometric Measurements:}
+\begin{itemize}
+  \item \textbf{Centroid Position}: Cell center coordinates $(c_x, c_y)$ calculated using image moments: $c_x = \frac{M_{10}}{M_{00}}, c_y = \frac{M_{01}}{M_{00}}$ where $M_{ij}$ represents the $(i,j)$-th moment of the cell mask
+  \item \textbf{Area}: Total pixel area $A$ of the cell mask in square pixels
+  \item \textbf{Perimeter}: Arc length $P$ of the cell boundary contour in pixels
+\end{itemize}
+
+\textbf{Shape Descriptors:}
+\begin{itemize}
+  \item \textbf{Circularity}: Shape compactness measure calculated as $C = \frac{4\pi A}{P^2}$, where $C = 1$ indicates a perfect circle and $C < 1$ indicates increasing deviation from circularity
+  \item \textbf{Aspect Ratio}: Elongation measure derived from fitted ellipse, computed as $R = \frac{L_{major}}{L_{minor}}$ where $L_{major}$ and $L_{minor}$ are the major and minor axis lengths of the best-fit ellipse
+  \item \textbf{Ellipse Angle}: Orientation angle $\theta$ of the major axis of the fitted ellipse relative to the horizontal axis
+  \item \textbf{Solidity}: Convexity measure calculated as $S = \frac{A}{A_{hull}}$ where $A_{hull}$ is the area of the convex hull, indicating the degree of boundary concavity
+\end{itemize}
+
+\textbf{Temporal Information:}
+\begin{itemize}
+  \item \textbf{Frame Index}: Sequential frame number in the video sequence
+  \item \textbf{Time Stamp}: Real-time annotation based on user-configurable time intervals between frames (default: 3 minutes)
+  \item \textbf{Cell ID}: Persistent identifier maintained by the temporal tracking system
+\end{itemize}
+
+\subsubsection{Export Formats and Data Organization}
+
+The system provides multiple export formats to accommodate diverse analysis workflows:
+
+\textbf{Structured Data Export:}
+\begin{itemize}
+  \item \textbf{CSV Format}: Tabular data with rows representing individual cell detections and columns containing morphological parameters, suitable for statistical analysis in R, Python, or Excel
+  \item \textbf{JSON Format}: Hierarchical data structure with metadata including total frame count, time intervals, and organized tracking data for programmatic analysis
+\end{itemize}
+
+\textbf{Visual Export:}
+\begin{itemize}
+  \item \textbf{Annotated Video}: MP4/AVI video files with cell tracking overlays, showing persistent cell IDs and mask boundaries with configurable frame rates
+  \item \textbf{Individual Frames}: High-resolution annotated still images for each frame, suitable for publication and detailed visual analysis
+\end{itemize}
+
+\subsubsection{Statistical Analysis and Quality Metrics}
+
+CellSeek automatically computes summary statistics for tracked cell populations to provide immediate insights into experimental datasets:
+
+\begin{align}
+  \text{Population Statistics} = \{\mu, \sigma, \text{min}, \text{max}\}
+\end{align}
+
+where statistics are computed for each morphological parameter across all tracked cells and time points. Key metrics include:
+
+\begin{itemize}
+  \item \textbf{Detection Summary}: Total number of cell detections, unique cell count, and temporal coverage
+  \item \textbf{Morphological Distributions}: Mean, standard deviation, minimum, and maximum values for area, perimeter, circularity, aspect ratio, and solidity
+  \item \textbf{Temporal Coverage}: Frame range analysis and total experimental duration based on user-specified time intervals
+\end{itemize}
+
+This comprehensive analysis framework enables researchers to immediately assess cell population heterogeneity, temporal dynamics, and morphological changes without requiring external analysis tools, while simultaneously providing standardized data formats for advanced computational analysis.
+
 \end{document}
